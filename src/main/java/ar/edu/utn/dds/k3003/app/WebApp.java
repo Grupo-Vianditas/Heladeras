@@ -14,6 +14,7 @@ import ar.edu.utn.dds.k3003.presentation.metrics.controllersCounters.OthersCount
 import ar.edu.utn.dds.k3003.presentation.metrics.controllersCounters.TemperaturasCounter;
 import ar.edu.utn.dds.k3003.presentation.metrics.controllersCounters.ViandasCounter;
 
+import ar.edu.utn.dds.k3003.presentation.metrics.heartbeat.ApplicationHealthCheck;
 import ar.edu.utn.dds.k3003.presentation.metrics.queueCounters.QueueCounter;
 import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -48,6 +49,8 @@ public class WebApp {
         fachada.setViandasProxy(new ViandasProxy(objectMapper));
 
         var port = Integer.parseInt(env.getOrDefault("PORT", "8080"));
+
+        ApplicationHealthCheck healthCheck = new ApplicationHealthCheck(registry);
 
         var app = Javalin.create(config -> {
             config.jsonMapper(new JavalinJackson().updateMapper(WebApp::configureObjectMapper));
