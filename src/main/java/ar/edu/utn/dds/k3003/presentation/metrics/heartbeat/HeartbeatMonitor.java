@@ -6,22 +6,18 @@ import io.micrometer.prometheusmetrics.PrometheusMeterRegistry;
 
 public class HeartbeatMonitor {
 
-    private long lastHeartbeatTime;
+    private static final int ISALIVE = 1;
 
     public HeartbeatMonitor(MetricsConfig metricsConfig) {
         PrometheusMeterRegistry registry = metricsConfig.getRegistry();
 
-        lastHeartbeatTime = System.currentTimeMillis();
-        Gauge.builder("app_heartbeat", this, HeartbeatMonitor::getLastHeartbeatTime)
-                .description("Indicates the last time the application was alive")
+        Gauge.builder("app_heartbeat", this, HeartbeatMonitor::isalive)
+                .description("Indicates if the application is alive")
                 .register(registry);
     }
 
-    public long getLastHeartbeatTime() {
-        return lastHeartbeatTime;
+    public long isalive() {
+        return ISALIVE;
     }
 
-    public void updateHeartbeat() {
-        lastHeartbeatTime = System.currentTimeMillis();
-    }
 }
