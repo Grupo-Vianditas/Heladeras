@@ -50,10 +50,6 @@ public class WebApp {
 
         var heartbeat = new HeartbeatMonitor(metricsConfig);
 
-        // Levanto un thread cada 10 segundos para decir si esta vivo o no
-        ScheduledExecutorService scheduler = Executors.newScheduledThreadPool(1);
-        scheduler.scheduleAtFixedRate(heartbeat::updateHeartbeat, 0, 10, TimeUnit.SECONDS);
-
         var objectMapper = createObjectMapper();
         fachada.setViandasProxy(new ViandasProxy(objectMapper));
 
@@ -132,8 +128,6 @@ public class WebApp {
                 System.err.println("Error cerrando conexión: " + e.getMessage());
             }
         }
-
-        Runtime.getRuntime().addShutdownHook(new Thread(scheduler::shutdown));
     }
 
     public static ObjectMapper createObjectMapper() {
