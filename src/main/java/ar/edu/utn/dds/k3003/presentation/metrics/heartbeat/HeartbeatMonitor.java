@@ -6,7 +6,7 @@ import io.micrometer.prometheusmetrics.PrometheusMeterRegistry;
 
 public class HeartbeatMonitor {
 
-    private static final int ISALIVE = 1;
+    private static int isalive;
 
     public HeartbeatMonitor(MetricsConfig metricsConfig) {
         PrometheusMeterRegistry registry = metricsConfig.getRegistry();
@@ -17,7 +17,11 @@ public class HeartbeatMonitor {
     }
 
     public long isalive() {
-        return ISALIVE;
+        return isalive;
+    }
+
+    public void setAlive(int status) {
+        isalive = status;
     }
 
 }

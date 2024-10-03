@@ -50,6 +50,12 @@ public class WebApp {
 
         var heartbeat = new HeartbeatMonitor(metricsConfig);
 
+        ScheduledExecutorService scheduler = Executors.newScheduledThreadPool(1);
+
+        scheduler.scheduleAtFixedRate(() -> {
+            heartbeat.setAlive(1);
+        }, 0, 10, TimeUnit.SECONDS);
+
         var objectMapper = createObjectMapper();
         fachada.setViandasProxy(new ViandasProxy(objectMapper));
 
@@ -128,6 +134,12 @@ public class WebApp {
                 System.err.println("Error cerrando conexión: " + e.getMessage());
             }
         }
+
+        Runtime.getRuntime().addShutdownHook(new Thread(() -> {
+            scheduler.shutdown();
+            heartbeat.setAlive(0);
+        }));
+
     }
 
     public static ObjectMapper createObjectMapper() {
