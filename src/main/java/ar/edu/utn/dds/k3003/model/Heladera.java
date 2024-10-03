@@ -21,7 +21,7 @@ import java.util.Set;
 @AllArgsConstructor
 @Entity
 @Table(name = "heladeras")
-public class Heladera{
+public class Heladera {
 
     @Min(0)
     @Id
