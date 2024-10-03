@@ -13,6 +13,7 @@ import ar.edu.utn.dds.k3003.presentation.metrics.controllersCounters.HeladerasCo
 import ar.edu.utn.dds.k3003.presentation.metrics.controllersCounters.OthersCounter;
 import ar.edu.utn.dds.k3003.presentation.metrics.controllersCounters.TemperaturasCounter;
 import ar.edu.utn.dds.k3003.presentation.metrics.controllersCounters.ViandasCounter;
+import ar.edu.utn.dds.k3003.presentation.metrics.heartbeat.HeartbeatMonitor;
 import ar.edu.utn.dds.k3003.presentation.metrics.queueCounters.QueueCounter;
 import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -30,6 +31,10 @@ import java.util.Locale;
 import java.util.TimeZone;
 import java.util.concurrent.TimeoutException;
 
+import java.util.concurrent.Executors;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.TimeUnit;
+
 public class WebApp {
 
     private static final String TOKEN = "token123";
@@ -42,6 +47,12 @@ public class WebApp {
         // Inicializar las metricas
         MetricsConfig metricsConfig = new MetricsConfig();
         PrometheusMeterRegistry registry = metricsConfig.getRegistry();
+
+        var heartbeat = new HeartbeatMonitor(metricsConfig);
+
+        // Levanto un thread cada 10 segundos para decir si esta vivo o no
+        ScheduledExecutorService scheduler = Executors.newScheduledThreadPool(1);
+        scheduler.scheduleAtFixedRate(heartbeat::updateHeartbeat, 0, 10, TimeUnit.SECONDS);
 
         var objectMapper = createObjectMapper();
         fachada.setViandasProxy(new ViandasProxy(objectMapper));
@@ -59,6 +70,7 @@ public class WebApp {
         var temperaturasController = new TemperaturasController(fachada, new TemperaturasCounter(metricsConfig));
         var mockerController = new MockerController(fachada, new OthersCounter(metricsConfig));
         var cleanerController = new CleanerController(fachada, new OthersCounter(metricsConfig));
+
 
         // HeladerasController
         app.post("/heladeras", heladerasController::agregar);
@@ -121,6 +133,7 @@ public class WebApp {
             }
         }
 
+        Runtime.getRuntime().addShutdownHook(new Thread(scheduler::shutdown));
     }
 
     public static ObjectMapper createObjectMapper() {
