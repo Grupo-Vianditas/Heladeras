@@ -57,12 +57,10 @@ public class TemperaturasCounter {
                 .description("Total failed GET requests to /heladeras/{heladeraId}/temperaturas")
                 .register(registry);
 
-        temperaturasPorHeladera.forEach((heladera, temp) -> {
-            Gauge.builder("temperatura_heladera", temperaturasPorHeladera, t -> t.get(heladera))
-                    .tag("heladera", heladera)
-                    .description("Ultima temperatura registrada de cada heladera")
-                    .register(registry);
-        });
+        temperaturasPorHeladera.forEach((heladera, temp) -> Gauge.builder("temperatura_heladera", temperaturasPorHeladera, t -> t.get(heladera))
+                .tag("heladera", heladera)
+                .description("Ultima temperatura registrada de cada heladera")
+                .register(registry));
 
     }
 
