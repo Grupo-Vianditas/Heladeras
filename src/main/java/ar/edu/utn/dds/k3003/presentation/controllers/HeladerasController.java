@@ -2,12 +2,13 @@ package ar.edu.utn.dds.k3003.presentation.controllers;
 
 import ar.edu.utn.dds.k3003.app.Fachada;
 import ar.edu.utn.dds.k3003.facades.dtos.HeladeraDTO;
-import ar.edu.utn.dds.k3003.presentation.auxiliar.ErrorResponse;
+import ar.edu.utn.dds.k3003.presentation.auxiliar.ErrorHandler;
 import ar.edu.utn.dds.k3003.presentation.metrics.controllersCounters.HeladerasCounter;
 import io.javalin.http.Context;
 import io.javalin.http.HttpStatus;
-import org.hibernate.boot.model.naming.IllegalIdentifierException;
 
+import javax.persistence.PersistenceException;
+import java.util.Map;
 import java.util.NoSuchElementException;
 
 public class HeladerasController {
@@ -20,6 +21,13 @@ public class HeladerasController {
         this.heladerasCounter = heladerasCounter;
     }
 
+    // ################
+    // Update 4/10/24: respuesta de controller:
+    // 1: Se intento insertar una heladera con un Id a mano.
+    // 2: Cambia el nombre de la heladera capo, es unique en la db.
+    // 3: Otros errores
+    // ################
+
     public void agregar(Context ctx) {
         try {
             ctx.json( // 3° Retorno el json con el DTO
@@ -30,19 +38,24 @@ public class HeladerasController {
             ctx.status(HttpStatus.CREATED);
             heladerasCounter.incrementSucessfulPostCounter();
         }catch(IllegalArgumentException e) {
-            ctx.status(HttpStatus.BAD_REQUEST);
-            ctx.json(new ErrorResponse(1, e.getMessage()));
+            ErrorHandler.manejarError(ctx, HttpStatus.BAD_REQUEST, 1, "No se pueden asignar Ids de forma manual.");
             heladerasCounter.incrementFailedPostCounter();
-        }catch(IllegalIdentifierException e) {
-            ctx.status(HttpStatus.NOT_ACCEPTABLE);
-            ctx.json(new ErrorResponse(2, e.getMessage()));
+        }catch(PersistenceException e) {
+            ErrorHandler.manejarError(ctx, HttpStatus.BAD_REQUEST, 2, "Cambie el nombre de la heladera a persistir.");
             heladerasCounter.incrementFailedPostCounter();
         }catch (Exception e) {
-            ctx.status(HttpStatus.INTERNAL_SERVER_ERROR);
-            ctx.json(new ErrorResponse(99, "Ups, hubo un error en el endpoint agregar: "+e));
+            ErrorHandler.manejarError(ctx, HttpStatus.INTERNAL_SERVER_ERROR, 3, "Error no contemplado: " + e);
             heladerasCounter.incrementFailedPostCounter();
         }
     }
+
+
+    // ################
+    // Update 4/10/24: respuesta de controller:
+    // 1: Se intento insertar una heladera con un Id a mano.
+    // 2: Cambia el nombre de la heladera capo, es unique en la db.
+    // 3: Otros errores
+    // ################
 
     public void buscarXId(Context ctx) {
         try {
@@ -54,20 +67,13 @@ public class HeladerasController {
             ctx.status(HttpStatus.OK);
             heladerasCounter.incrementSuccessfulGetCounter();
         }catch(NoSuchElementException e) {
-            ctx.status(HttpStatus.NOT_FOUND);
-            ctx.json(new ErrorResponse(0, e.getMessage()));
-            heladerasCounter.incrementFailedGetCounter();
-        }catch(IllegalArgumentException e) {
-            ctx.status(HttpStatus.BAD_REQUEST);
-            ctx.json(new ErrorResponse(1, e.getMessage()));
+            ErrorHandler.manejarError(ctx, HttpStatus.NOT_FOUND, 1, "No existe una heladera con ese Id.");
             heladerasCounter.incrementFailedGetCounter();
         }catch(io.javalin.validation.ValidationException e){
-            ctx.status(HttpStatus.BAD_REQUEST);
-            ctx.json(new ErrorResponse(2, "Se envio un valor no valido como Id"));
+            ErrorHandler.manejarError(ctx, HttpStatus.BAD_REQUEST, 2, "Se envio un valor invalido como Id.");
             heladerasCounter.incrementFailedGetCounter();
         }catch (Exception e) {
-            ctx.status(HttpStatus.INTERNAL_SERVER_ERROR);
-            ctx.json(new ErrorResponse(99, "Ups, hubo un error en el endpoint buscarXId: "+e));
+            ErrorHandler.manejarError(ctx, HttpStatus.INTERNAL_SERVER_ERROR, 3, "Error no contemplado: " + e);
             heladerasCounter.incrementFailedGetCounter();
         }
     }

@@ -3,11 +3,13 @@ package ar.edu.utn.dds.k3003.presentation.controllers;
 import ar.edu.utn.dds.k3003.app.Fachada;
 import ar.edu.utn.dds.k3003.facades.dtos.RetiroDTO;
 import ar.edu.utn.dds.k3003.presentation.auxiliar.ContextMappers.ViandaDTOMapper;
-import ar.edu.utn.dds.k3003.presentation.auxiliar.ErrorResponse;
+
+import ar.edu.utn.dds.k3003.presentation.auxiliar.ErrorHandler;
 import ar.edu.utn.dds.k3003.presentation.metrics.controllersCounters.ViandasCounter;
 import io.javalin.http.Context;
 import io.javalin.http.HttpStatus;
 
+import java.util.Map;
 import java.util.NoSuchElementException;
 
 public class ViandasController {
@@ -27,15 +29,13 @@ public class ViandasController {
             var viandaDTO = viandaDTOMapper.mapper(ctx); // Eso si que no lo cambio.
             this.fachada.depositar(viandaDTO.getHeladeraId(), viandaDTO.getCodigoQR());
             ctx.status(HttpStatus.OK);
-            ctx.result("Vianda depositada correctamente");
+            ctx.json(Map.of("Status", "Done"));
             viandasCounter.incrementSuccessfulPostCounter();
         }catch(NoSuchElementException | IllegalArgumentException e) {
-            ctx.status(HttpStatus.BAD_REQUEST);
-            ctx.result("Error de solicitud"); // No lo puedo cambiar por definicion de la API
+            ErrorHandler.manejarError(ctx, HttpStatus.BAD_REQUEST, 1, "Error de solicitud");
             viandasCounter.incrementFailedPostCounter();
         } catch (Exception e) {
-            ctx.status(HttpStatus.INTERNAL_SERVER_ERROR);
-            ctx.json(new ErrorResponse(99, "Ups, hubo un error en el endpoint depositar: "+e));
+            ErrorHandler.manejarError(ctx, HttpStatus.INTERNAL_SERVER_ERROR, 3, "Error no contemplado: " + e);
             viandasCounter.incrementFailedPostCounter();
         }
     }
@@ -46,15 +46,13 @@ public class ViandasController {
                     ctx.bodyAsClass(RetiroDTO.class)
             );
             ctx.status(HttpStatus.OK);
-            ctx.result("Vianda retirada correctamente");
+            ctx.json(Map.of("Status", "Done"));
             viandasCounter.incrementSuccessfulGetCounter();
         }catch(NoSuchElementException | IllegalArgumentException e) {
-            ctx.status(HttpStatus.BAD_REQUEST);
-            ctx.result("Error de solicitud"); // IDEM caso anterior...
+            ErrorHandler.manejarError(ctx, HttpStatus.BAD_REQUEST, 1, "Error de solicitud");
             viandasCounter.incrementFailedGetCounter();
         } catch (Exception e) {
-            ctx.status(HttpStatus.INTERNAL_SERVER_ERROR);
-            ctx.json(new ErrorResponse(99, "Ups, hubo un error en el endpoint retirar: "+e));
+            ErrorHandler.manejarError(ctx, HttpStatus.INTERNAL_SERVER_ERROR, 3, "Error no contemplado: " + e);
             viandasCounter.incrementFailedGetCounter();
         }
     }

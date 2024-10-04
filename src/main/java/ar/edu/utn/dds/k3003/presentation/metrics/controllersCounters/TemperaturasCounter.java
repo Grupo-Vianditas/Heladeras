@@ -4,6 +4,7 @@ import ar.edu.utn.dds.k3003.presentation.metrics.MetricsConfig;
 import io.micrometer.core.instrument.Counter;
 import io.micrometer.prometheusmetrics.PrometheusMeterRegistry;
 
+
 public class TemperaturasCounter {
 
     // Contadores generales para GET y POST

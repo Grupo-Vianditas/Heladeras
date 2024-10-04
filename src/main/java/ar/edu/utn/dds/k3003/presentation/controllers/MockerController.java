@@ -3,7 +3,7 @@ package ar.edu.utn.dds.k3003.presentation.controllers;
 import ar.edu.utn.dds.k3003.app.Fachada;
 import ar.edu.utn.dds.k3003.facades.dtos.HeladeraDTO;
 import ar.edu.utn.dds.k3003.facades.dtos.TemperaturaDTO;
-import ar.edu.utn.dds.k3003.presentation.auxiliar.ErrorResponse;
+import ar.edu.utn.dds.k3003.presentation.auxiliar.ErrorHandler;
 import ar.edu.utn.dds.k3003.presentation.metrics.controllersCounters.OthersCounter;
 import io.javalin.http.Context;
 import io.javalin.http.HttpStatus;
@@ -37,6 +37,12 @@ public class MockerController {
         }
         return salt.toString();
     }
+
+    // ################
+    // Update 4/10/24: respuesta de controller:
+    // 0: Devuelve la lista de heladeras y 3 temperaturas aleatorias.
+    // 3: Errores varios, no hay mucho para probar en este punto.
+    // ################
 
     public void mockTestObjects(Context ctx) {
         try {
@@ -73,13 +79,8 @@ public class MockerController {
 
             ctx.json(jsonResponse);
             mockerCounter.incrementSuccessfulMockCounter();
-        } catch (IllegalArgumentException e) {
-            ctx.status(HttpStatus.BAD_REQUEST);
-            ctx.json(new ErrorResponse(1, e.getMessage()));
-            mockerCounter.incrementFailedMockCounter();
         } catch (Exception e) {
-            ctx.status(HttpStatus.INTERNAL_SERVER_ERROR);
-            ctx.json(new ErrorResponse(99, "Ups, hubo un error en el endpoint mock: " + e));
+            ErrorHandler.manejarError(ctx, HttpStatus.INTERNAL_SERVER_ERROR, 3, "Error no contemplado: " + e);
             mockerCounter.incrementFailedMockCounter();
         }
     }

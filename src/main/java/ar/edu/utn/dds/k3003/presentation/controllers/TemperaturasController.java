@@ -3,18 +3,22 @@ package ar.edu.utn.dds.k3003.presentation.controllers;
 import ar.edu.utn.dds.k3003.app.Fachada;
 import ar.edu.utn.dds.k3003.facades.dtos.TemperaturaDTO;
 
-import ar.edu.utn.dds.k3003.presentation.auxiliar.ErrorResponse;
+import ar.edu.utn.dds.k3003.presentation.auxiliar.ErrorHandler;
 import ar.edu.utn.dds.k3003.presentation.metrics.controllersCounters.TemperaturasCounter;
+
 import io.javalin.http.Context;
 import io.javalin.http.HttpStatus;
 
 import java.time.DateTimeException;
+import java.time.LocalDateTime;
+import java.util.Map;
 import java.util.NoSuchElementException;
 
 public class TemperaturasController {
 
     private Fachada fachada;
     private TemperaturasCounter temperaturasCounter;
+
 
     public TemperaturasController(Fachada fachada, TemperaturasCounter temperaturasCounter){
         this.fachada = fachada;
@@ -24,18 +28,30 @@ public class TemperaturasController {
     public void registrarTemperatura(Context ctx) {
         try {
 
+            boolean flag = false;
+
             TemperaturaDTO receivedTemp = ctx.bodyAsClass(TemperaturaDTO.class);
+
+            // Si alguien manda una temperatura sin fecha, somos buenos y le asignamos 1
+            if (receivedTemp.getFechaMedicion() == null){
+                receivedTemp.setFechaMedicion(LocalDateTime.now());
+                flag = true;
+            }
+
             this.fachada.temperatura(receivedTemp);
-            ctx.result("Temperatura registrada correctamente");
+            if (!flag){
+                ctx.json(Map.of("Status", "Done"));
+            } else{
+                ctx.json(Map.of("Status", "Done with date creation"));
+            }
             ctx.status(HttpStatus.OK);
             temperaturasCounter.incrementSuccessfulPostCounter();
+
         }catch(NoSuchElementException | IllegalArgumentException | DateTimeException e) {
-            ctx.status(HttpStatus.BAD_REQUEST);
-            ctx.json(new ErrorResponse(1, e.getMessage()));
+            ErrorHandler.manejarError(ctx, HttpStatus.BAD_REQUEST, 1, "No existe una heladera con ese Id.");
             temperaturasCounter.incrementFailedPostCounter();
         } catch (Exception e) {
-            ctx.status(HttpStatus.INTERNAL_SERVER_ERROR);
-            ctx.json(new ErrorResponse(99, "Ups, hubo un error en el endpoint registrarTemperatura: "+e));
+            ErrorHandler.manejarError(ctx, HttpStatus.INTERNAL_SERVER_ERROR, 3, "Error no contemplado: " + e);
             temperaturasCounter.incrementFailedPostCounter();
         }
     }
@@ -50,20 +66,16 @@ public class TemperaturasController {
             ctx.status(HttpStatus.OK);
             temperaturasCounter.incrementSuccessfulGetCounter();
         }catch(NoSuchElementException e) {
-            ctx.status(HttpStatus.NOT_FOUND);
-            ctx.json("Heladera no encontrada");
+            ErrorHandler.manejarError(ctx, HttpStatus.NOT_FOUND, 1, "No existe una heladera con ese Id.");
             temperaturasCounter.incrementFailedGetCounter();
         }catch(IllegalArgumentException e) {
-            ctx.status(HttpStatus.BAD_REQUEST);
-            ctx.json(new ErrorResponse(1, e.getMessage()));
+            ErrorHandler.manejarError(ctx, HttpStatus.BAD_REQUEST, 2, "Error en la parametrizacion del request.");
             temperaturasCounter.incrementFailedGetCounter();
         }catch(io.javalin.validation.ValidationException e){
-            ctx.status(HttpStatus.BAD_REQUEST);
-            ctx.json(new ErrorResponse(2, "Se envio un valor no valido como Id"));
+            ErrorHandler.manejarError(ctx, HttpStatus.BAD_REQUEST, 2, "Se envio un Id invalido.");
             temperaturasCounter.incrementFailedGetCounter();
         }catch (Exception e) {
-            ctx.status(HttpStatus.INTERNAL_SERVER_ERROR);
-            ctx.json(new ErrorResponse(99, "Ups, hubo un error en el endpoint obtenerTemperaturas: "+e));
+            ErrorHandler.manejarError(ctx, HttpStatus.INTERNAL_SERVER_ERROR, 3, "Error no contemplado: " + e);
             temperaturasCounter.incrementFailedGetCounter();
         }
     }
