@@ -2,6 +2,7 @@ package ar.edu.utn.dds.k3003.presentation.controllers;
 
 import ar.edu.utn.dds.k3003.app.Fachada;
 import ar.edu.utn.dds.k3003.facades.dtos.TemperaturaDTO;
+
 import ar.edu.utn.dds.k3003.presentation.auxiliar.ErrorResponse;
 import ar.edu.utn.dds.k3003.presentation.metrics.controllersCounters.TemperaturasCounter;
 import io.javalin.http.Context;
@@ -22,20 +23,21 @@ public class TemperaturasController {
 
     public void registrarTemperatura(Context ctx) {
         try {
-            this.fachada.temperatura(
-                    ctx.bodyAsClass(TemperaturaDTO.class)
-            );
+
+            TemperaturaDTO receivedTemp = ctx.bodyAsClass(TemperaturaDTO.class);
+            this.fachada.temperatura(receivedTemp);
             ctx.result("Temperatura registrada correctamente");
             ctx.status(HttpStatus.OK);
             temperaturasCounter.incrementSuccessfulPostCounter();
+            temperaturasCounter.actualizarTemperatura(this.fachada.buscarXId(receivedTemp.getHeladeraId()).getNombre(),receivedTemp.getTemperatura());
         }catch(NoSuchElementException | IllegalArgumentException | DateTimeException e) {
             ctx.status(HttpStatus.BAD_REQUEST);
             ctx.json(new ErrorResponse(1, e.getMessage()));
-            temperaturasCounter.incrementSuccessfulPostCounter();
+            temperaturasCounter.incrementFailedPostCounter();
         } catch (Exception e) {
             ctx.status(HttpStatus.INTERNAL_SERVER_ERROR);
             ctx.json(new ErrorResponse(99, "Ups, hubo un error en el endpoint registrarTemperatura: "+e));
-            temperaturasCounter.incrementSuccessfulPostCounter();
+            temperaturasCounter.incrementFailedPostCounter();
         }
     }
 
