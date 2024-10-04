@@ -2,16 +2,9 @@ package ar.edu.utn.dds.k3003.presentation.metrics.controllersCounters;
 
 import ar.edu.utn.dds.k3003.presentation.metrics.MetricsConfig;
 import io.micrometer.core.instrument.Counter;
-import io.micrometer.core.instrument.Gauge;
 import io.micrometer.prometheusmetrics.PrometheusMeterRegistry;
 
-import java.util.Map;
-import java.util.concurrent.ConcurrentHashMap;
-
 public class TemperaturasCounter {
-
-    // Me armo un map para almacenar el nombre de la heladera y su ultima temperatura
-    private final Map<String, Integer> temperaturasPorHeladera = new ConcurrentHashMap<>();
 
     // Contadores generales para GET y POST
     // Separados por exitosos y fallidos
@@ -56,12 +49,6 @@ public class TemperaturasCounter {
                 .tag("method", "GET")
                 .description("Total failed GET requests to /heladeras/{heladeraId}/temperaturas")
                 .register(registry);
-
-        temperaturasPorHeladera.forEach((heladera, temp) -> Gauge.builder("temperatura_heladera", temperaturasPorHeladera, t -> t.get(heladera))
-                .tag("heladera", heladera)
-                .description("Ultima temperatura registrada de cada heladera")
-                .register(registry));
-
     }
 
     // Métodos para incrementar los contadores de POST
@@ -80,10 +67,6 @@ public class TemperaturasCounter {
 
     public void incrementFailedGetCounter() {
         getFailedTemperaturasCounter.increment();
-    }
-
-    public void actualizarTemperatura(String heladera, Integer temperatura) {
-        temperaturasPorHeladera.put(heladera, temperatura);
     }
 
 }

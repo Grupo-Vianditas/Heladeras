@@ -29,7 +29,6 @@ public class TemperaturasController {
             ctx.result("Temperatura registrada correctamente");
             ctx.status(HttpStatus.OK);
             temperaturasCounter.incrementSuccessfulPostCounter();
-            temperaturasCounter.actualizarTemperatura(this.fachada.buscarXId(receivedTemp.getHeladeraId()).getNombre(),receivedTemp.getTemperatura());
         }catch(NoSuchElementException | IllegalArgumentException | DateTimeException e) {
             ctx.status(HttpStatus.BAD_REQUEST);
             ctx.json(new ErrorResponse(1, e.getMessage()));
