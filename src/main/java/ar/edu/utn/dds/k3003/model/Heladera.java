@@ -1,20 +1,21 @@
 package ar.edu.utn.dds.k3003.model;
 
+import ar.edu.utn.dds.k3003.model.errors.ErrorTipo;
+import ar.edu.utn.dds.k3003.model.errors.OperacionInvalidaException;
+import ar.edu.utn.dds.k3003.model.estados.Estado;
+import ar.edu.utn.dds.k3003.model.estados.Operaciones;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.Setter;
 
 import javax.persistence.*;
-import javax.validation.ConstraintViolation;
-import javax.validation.Validation;
-import javax.validation.Validator;
-import javax.validation.ValidatorFactory;
+
 import javax.validation.constraints.Min;
 import javax.validation.constraints.NotNull;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Set;
+
 
 @Getter
 @Setter
@@ -27,31 +28,37 @@ public class Heladera {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column
-    private Integer id;
+    private Integer heladeraId;
 
     @NotNull
     @Column(unique=true)
     private String nombre;
 
+    @Transient
+    private Estado estadoTransaccional;
+
     @Min(0)
-    @Column(name = "cantidad_de_viandas")
+    @Column(name = "cantidadDeViandasDepositadas")
     private Integer cantidadDeViandas;
 
-    @Column(columnDefinition = "DATE", name = "fecha_de_funcionamiento")
+    @Column(name = "cantidadDeViandasMaxima")
+    private Integer cantidadDeViandasMaxima;
+
+    @Column(columnDefinition = "DATE", name = "FechaDeFuncionamiento")
     private LocalDateTime fechaDeFuncionamiento;
 
-    @Column(name = "estado_operacional")
+    @Column(name = "estadoOperacional")
     private Boolean estadoOperacional;
 
-    @Column(name = "ultima_temperatura_registrada")
+    @Column(name = "ultimaTemperaturaRegistrada")
     private Integer ultimaTemperaturaRegistrada;
 
-    @Column(name = "ultima_apertura", columnDefinition = "DATE")
+    @Column(name = "ultimaApertura", columnDefinition = "DATE")
     private LocalDateTime ultimaApertura;
 
     @Enumerated(EnumType.STRING)
-    @Column(name = "ultimo_movimiento")
-    private Movimientos ultimoMovimiento;
+    @Column(name = "ultimaOperacion")
+    private Operaciones ultimaOperacion;
 
     @OneToMany(mappedBy = "heladera", cascade = {CascadeType.ALL}, fetch = FetchType.EAGER, orphanRemoval = true)
     private List<Temperatura> temperaturas;
@@ -59,61 +66,77 @@ public class Heladera {
     public Heladera() {}
 
     public Heladera(
-            Integer id,
+            Integer heladeraId,
             String nombre,
             Integer cantidadDeViandas
     ) {
-        if (cantidadDeViandas == null) {
-            cantidadDeViandas = 0;
-        }
-
-        this.id = id;
+        this.heladeraId = heladeraId;
         this.nombre = nombre;
-        this.cantidadDeViandas = cantidadDeViandas;
+        this.cantidadDeViandas = (cantidadDeViandas != null) ? cantidadDeViandas : 0;
+        this.estadoTransaccional = Estado.CERRADA;
+        this.cantidadDeViandasMaxima = 100;
         this.fechaDeFuncionamiento = LocalDateTime.now();
         this.estadoOperacional = true;
         this.ultimaTemperaturaRegistrada = null;
         this.ultimaApertura = null;
-        this.ultimoMovimiento = Movimientos.SIN_MOVIMIENTOS;
+        this.ultimaOperacion = Operaciones.SIN_MOVIMIENTOS;
         this.temperaturas = new ArrayList<>();
-        validate();
-    }
 
-    public void agregarTemperatura(Temperatura temperatura) {
-        this.temperaturas.add(0, temperatura);
-        temperatura.setHeladera(this); // Establecer la relación bidireccional
-    }
-
-    public void setCantidadDeViandas(Integer cantidadDeViandas) {
-        if (cantidadDeViandas < 0) {
-            throw new IllegalArgumentException("La cantidad de viandas no puede ser negativa.");
-        }
-        if (this.cantidadDeViandas == 0 && cantidadDeViandas < this.cantidadDeViandas) {
-            throw new IllegalArgumentException("No se puede decrementar la cantidad de viandas cuando ya es 0.");
-        }
-        this.cantidadDeViandas = cantidadDeViandas;
-    }
-
-    private void validate() {
-        Validator validator;
-        try (ValidatorFactory factory = Validation.buildDefaultValidatorFactory()) {
-            validator = factory.getValidator();
-        }
-        Set<ConstraintViolation<Heladera>> violations = validator.validate(this);
-
-        if (!violations.isEmpty()) {
-            StringBuilder sb = new StringBuilder();
-            int count = 0;
-            for (ConstraintViolation<Heladera> violation : violations) {
-                sb.append(violation.getPropertyPath())
-                        .append(" : ")
-                        .append(violation.getMessage());
-                count++;
-                if (count < violations.size()) {
-                    sb.append(" & ");
-                }
+        if (cantidadDeViandas != null) {
+            if (cantidadDeViandas > this.cantidadDeViandasMaxima) {
+                throw new OperacionInvalidaException(
+                        ErrorTipo.CANTIDAD_EXCESIVA,
+                        "La cantidad inicial de viandas no puede superar la capacidad máxima de viandas."
+                );
             }
-            throw new IllegalArgumentException(sb.toString());
+            this.cantidadDeViandas = cantidadDeViandas;
+        } else {
+            this.cantidadDeViandas = 0;
         }
     }
+
+    public void agregarVianda() {
+        if (this.getCantidadDeViandas() + 1 > this.getCantidadDeViandasMaxima()) {
+            throw new OperacionInvalidaException(
+                    ErrorTipo.CANTIDAD_EXCESIVA,
+                    "No se pueden agregar más viandas a esta heladera."
+            );
+        }
+
+        if (this.getEstadoTransaccional() == Estado.CERRADA) {
+            this.setEstadoTransaccional(Estado.ABIERTA);
+        }
+
+        this.setCantidadDeViandas(this.getCantidadDeViandas() + 1);
+
+        this.setEstadoTransaccional(Estado.CERRADA);
+
+        this.setUltimaOperacion(Operaciones.DEPOSITO);
+        this.setUltimaApertura(LocalDateTime.now());
+    }
+
+
+    public void retirarVianda() throws OperacionInvalidaException {
+        if (this.getCantidadDeViandas() < 0) {
+            throw new OperacionInvalidaException(ErrorTipo.CANTIDAD_FALTANTE, "No se pueden retirar mas viandas de esta heladera.");
+        }
+
+        if (this.getEstadoTransaccional() == Estado.CERRADA) {
+            this.setEstadoTransaccional(Estado.ABIERTA);
+        }
+
+        this.setCantidadDeViandas(this.getCantidadDeViandas() - 1);
+
+        this.setEstadoTransaccional(Estado.CERRADA);
+
+        this.setUltimaOperacion(Operaciones.RETIRO);
+        this.setUltimaApertura(LocalDateTime.now());
+    }
+
+    public void agregarTemperatura(Temperatura temperatura){
+        temperatura.setHeladera(this);
+        this.temperaturas.add(temperatura);
+        this.ultimaTemperaturaRegistrada = temperatura.getTemperatura();
+    }
+
 }

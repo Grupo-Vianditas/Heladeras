@@ -9,6 +9,7 @@ import ar.edu.utn.dds.k3003.presentation.metrics.controllersCounters.Temperatura
 import io.javalin.http.Context;
 import io.javalin.http.HttpStatus;
 
+import javax.persistence.NoResultException;
 import java.time.DateTimeException;
 import java.time.LocalDateTime;
 import java.util.Map;
@@ -47,7 +48,7 @@ public class TemperaturasController {
             ctx.status(HttpStatus.OK);
             temperaturasCounter.incrementSuccessfulPostCounter();
 
-        }catch(NoSuchElementException | IllegalArgumentException | DateTimeException e) {
+        }catch(NoResultException e) {
             ErrorHandler.manejarError(ctx, HttpStatus.BAD_REQUEST, 1, "No existe una heladera con ese Id.");
             temperaturasCounter.incrementFailedPostCounter();
         } catch (Exception e) {

@@ -9,6 +9,7 @@ import ar.edu.utn.dds.k3003.presentation.metrics.controllersCounters.ViandasCoun
 import io.javalin.http.Context;
 import io.javalin.http.HttpStatus;
 
+import javax.persistence.NoResultException;
 import java.util.Map;
 import java.util.NoSuchElementException;
 
@@ -31,7 +32,7 @@ public class ViandasController {
             ctx.status(HttpStatus.OK);
             ctx.json(Map.of("Status", "Done"));
             viandasCounter.incrementSuccessfulPostCounter();
-        }catch(NoSuchElementException | IllegalArgumentException e) {
+        }catch(NoResultException e) {
             ErrorHandler.manejarError(ctx, HttpStatus.BAD_REQUEST, 1, "Error de solicitud");
             viandasCounter.incrementFailedPostCounter();
         } catch (Exception e) {
