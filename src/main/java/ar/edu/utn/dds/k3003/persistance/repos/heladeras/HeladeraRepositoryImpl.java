@@ -1,6 +1,9 @@
 package ar.edu.utn.dds.k3003.persistance.repos.heladeras;
 
 import ar.edu.utn.dds.k3003.model.Heladera;
+import ar.edu.utn.dds.k3003.model.errors.ErrorTipo;
+import ar.edu.utn.dds.k3003.model.errors.OperacionInvalidaException;
+import ar.edu.utn.dds.k3003.model.estados.Estado;
 import ar.edu.utn.dds.k3003.persistance.utils.PersistenceUtils;
 import org.hibernate.boot.model.naming.IllegalIdentifierException;
 
@@ -39,7 +42,7 @@ public class HeladeraRepositoryImpl implements HeladeraRepository {
     }
 
     @Override
-    public void modifyHeladera(Heladera heladera) {
+    public void modify(Heladera heladera) {
         if (heladera.getHeladeraId() == null) {
             throw new IllegalArgumentException("La heladera debe tener un ID para ser modificada.");
         }
@@ -85,7 +88,7 @@ public class HeladeraRepositoryImpl implements HeladeraRepository {
     }
 
     @Override
-    public Heladera getHeladeraById(Integer heladeraId) {
+    public Heladera getById(Integer heladeraId) {
         EntityManager em = emf.createEntityManager();
         try {
             Heladera heladera = em.find(Heladera.class, heladeraId);
@@ -116,5 +119,66 @@ public class HeladeraRepositoryImpl implements HeladeraRepository {
         }
     }
 
+    @Override
+    public void open(Integer heladeraId) {
+        EntityManager em = emf.createEntityManager();
+        try {
+            em.getTransaction().begin();
+
+            Heladera heladera = em.find(Heladera.class, heladeraId);
+            if (heladera == null) {
+                throw new NoResultException("No existe una heladera con el id: " + heladeraId);
+            }
+
+            if (heladera.getEstadoApertura() == Estado.ABIERTA){
+                throw new OperacionInvalidaException(ErrorTipo.HELADERA_ABIERTA, "La heladera ya se encuentra abierta");
+            }
+
+            heladera.setEstadoApertura(Estado.ABIERTA);
+
+            em.getTransaction().commit();
+        } catch (NoResultException e) {
+            em.getTransaction().rollback();
+            throw e;
+        } catch (Exception e) {
+            em.getTransaction().rollback();
+            throw new RuntimeException("Error al abrir la heladera", e);
+        } finally {
+            if (em.isOpen()) {
+                em.close();
+            }
+        }
+    }
+
+    @Override
+    public void close(Integer heladeraId) {
+        EntityManager em = emf.createEntityManager();
+        try {
+            em.getTransaction().begin();
+
+            Heladera heladera = em.find(Heladera.class, heladeraId);
+            if (heladera == null) {
+                throw new NoResultException("No existe una heladera con el id: " + heladeraId);
+            }
+
+            if (heladera.getEstadoApertura() == Estado.CERRADA){
+                throw new OperacionInvalidaException(ErrorTipo.HELADERA_CERRADA, "La heladera ya se encuentra cerrada");
+            }
+
+            heladera.setEstadoApertura(Estado.CERRADA);
+
+            em.getTransaction().commit();
+        } catch (NoResultException e) {
+            em.getTransaction().rollback();
+            throw e;
+        } catch (Exception e) {
+            em.getTransaction().rollback();
+            throw new RuntimeException("Error al cerrar la heladera", e);
+        } finally {
+            if (em.isOpen()) {
+                em.close();
+            }
+        }
+    }
 
 }

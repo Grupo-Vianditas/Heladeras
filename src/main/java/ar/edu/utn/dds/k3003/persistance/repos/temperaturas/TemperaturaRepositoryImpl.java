@@ -24,6 +24,7 @@ public class TemperaturaRepositoryImpl implements TemperaturaRepository {
             }
 
             heladera.agregarTemperatura(temperatura);
+
             em.persist(temperatura);
             em.merge(heladera);
             em.getTransaction().commit();

@@ -10,6 +10,7 @@ build/
 .idea/
 *.iml
 *.iws
+*.xml
 out/
 
 # Configuraciones de Eclipse
@@ -53,6 +54,3 @@ build/
 # Ignorar archivos de configuración de Docker
 docker-compose.yml
 docker-compose.override.yml
-
-# Ignoro las credenciales
-workspaces.xml

@@ -9,10 +9,7 @@ import ar.edu.utn.dds.k3003.clients.ViandasProxy;
 import ar.edu.utn.dds.k3003.facades.dtos.Constants;
 import ar.edu.utn.dds.k3003.presentation.controllers.*;
 import ar.edu.utn.dds.k3003.presentation.metrics.MetricsConfig;
-import ar.edu.utn.dds.k3003.presentation.metrics.controllersCounters.HeladerasCounter;
-import ar.edu.utn.dds.k3003.presentation.metrics.controllersCounters.OthersCounter;
-import ar.edu.utn.dds.k3003.presentation.metrics.controllersCounters.TemperaturasCounter;
-import ar.edu.utn.dds.k3003.presentation.metrics.controllersCounters.ViandasCounter;
+import ar.edu.utn.dds.k3003.presentation.metrics.controllersCounters.*;
 
 import ar.edu.utn.dds.k3003.presentation.metrics.heartbeat.ApplicationHealthCheck;
 import ar.edu.utn.dds.k3003.presentation.metrics.queueCounters.QueueCounter;
@@ -68,6 +65,10 @@ public class WebApp {
         // HeladerasController
         app.post("/heladeras", heladerasController::agregar);
         app.get("/heladeras/{heladeraId}", heladerasController::buscarXId);
+
+
+        app.post("/heladeras/{heladeraId}/habilitar", heladerasController::habilitar);
+        app.post("/heladeras/{heladeraId}/inhabilitar", heladerasController::inhabilitar);
 
         // ViandasController
         app.post("/depositos", viandasController::depositar);
