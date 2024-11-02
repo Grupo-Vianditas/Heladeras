@@ -12,8 +12,8 @@ import java.util.Map;
 
 public class CleanerController {
 
-    private Fachada fachada;
-    private OthersCounter cleanerCounter;
+    private final Fachada fachada;
+    private final OthersCounter cleanerCounter;
 
     public CleanerController(Fachada fachada, OthersCounter cleanerCounter) {
         this.fachada = fachada;

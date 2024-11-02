@@ -47,10 +47,7 @@ public class Fachada implements ar.edu.utn.dds.k3003.facades.FachadaHeladeras{
     public HabilitacionDTO habilitar(Integer heladeraId){return heladeraService.habilitar(heladeraId);}
 
     public HabilitacionDTO inhabilitar(Integer heladeraId){
-
-        FallaHeladeraDTO falla = new FallaHeladeraDTO(heladeraId, LocalDateTime.now());
-        this.notificadorService.enviarFalla(falla);
-
+        this.notificadorService.enviarFalla(new FallaHeladeraDTO(heladeraId, LocalDateTime.now()));
         return heladeraService.inhabilitar(heladeraId);
     }
 
@@ -64,9 +61,7 @@ public class Fachada implements ar.edu.utn.dds.k3003.facades.FachadaHeladeras{
         HabilitacionDTO nuevoEstado = heladeraService.inhabilitar(heladeraId);
         impresionService.imprimirIncidente(incidentesService.generarIncidente("TECNICO", heladeraId, null));
 
-        FallaHeladeraDTO falla = new FallaHeladeraDTO(heladeraId, LocalDateTime.now());
-        this.notificadorService.enviarFalla(falla);
-
+        this.notificadorService.enviarFalla(new FallaHeladeraDTO(heladeraId, LocalDateTime.now()));
         return nuevoEstado;
     }
 
@@ -82,10 +77,7 @@ public class Fachada implements ar.edu.utn.dds.k3003.facades.FachadaHeladeras{
         this.fachadaViandas.modificarEstado(vianda.getCodigoQR(), EstadoViandaEnum.DEPOSITADA);
 
         Heladera heladera = this.heladeraService.findHeladeraById(heladeraId);
-
-        MovimientoDTO movimientoDTO = new MovimientoDTO(heladeraId, heladera.getCantidadDeViandas(), heladera.getCantidadDeViandasMaxima());
-
-        this.notificadorService.enviarMovimiento(movimientoDTO);
+        this.notificadorService.enviarMovimiento(new MovimientoDTO(heladeraId, heladera.getCantidadDeViandas(), heladera.getCantidadDeViandasMaxima()));
     }
 
     @Override
@@ -95,11 +87,7 @@ public class Fachada implements ar.edu.utn.dds.k3003.facades.FachadaHeladeras{
         this.fachadaViandas.modificarEstado(vianda.getCodigoQR(), EstadoViandaEnum.RETIRADA);
 
         Heladera heladera = this.heladeraService.findHeladeraById(retiroDTO.getHeladeraId());
-
-        MovimientoDTO movimientoDTO = new MovimientoDTO(retiroDTO.getHeladeraId(), heladera.getCantidadDeViandas(), heladera.getCantidadDeViandasMaxima());
-
-        this.notificadorService.enviarMovimiento(movimientoDTO);
-
+        this.notificadorService.enviarMovimiento(new MovimientoDTO(retiroDTO.getHeladeraId(), heladera.getCantidadDeViandas(), heladera.getCantidadDeViandasMaxima()));
     }
 
     @Override
