@@ -20,8 +20,8 @@ public class HttpClientService {
     public HttpClientService() {
         this.httpClient = HttpClient.newHttpClient();
         this.objectMapper = new ObjectMapper().registerModule(new JavaTimeModule());
-        this.urlMovimiento = System.getenv("URL_COLABORADORES_MOVIMIENTO");
-        this.urlFallaHeladera = System.getenv("URL_COLABORADORES_FALLA");
+        this.urlMovimiento = "https://two024-tp-entrega-2-emilianosalvano.onrender.com/evento/movimientoDeViandaEnHeladera";
+        this.urlFallaHeladera = "https://two024-tp-entrega-2-emilianosalvano.onrender.com/evento/fallaHeladera";
     }
 
     public String enviarMovimiento(MovimientoDTO movimiento) throws Exception {

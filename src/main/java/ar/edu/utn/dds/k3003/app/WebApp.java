@@ -38,7 +38,7 @@ public class WebApp {
         var env = System.getenv();
         Fachada fachada = new Fachada();
 
-        // Inicializar las metricas
+        // Iniciazar las metricas
         MetricsConfig metricsConfig = new MetricsConfig();
         PrometheusMeterRegistry registry = metricsConfig.getRegistry();
 
