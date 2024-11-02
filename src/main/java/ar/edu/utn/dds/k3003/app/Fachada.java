@@ -3,15 +3,16 @@ package ar.edu.utn.dds.k3003.app;
 import ar.edu.utn.dds.k3003.facades.FachadaViandas;
 import ar.edu.utn.dds.k3003.facades.dtos.*;
 
+import ar.edu.utn.dds.k3003.model.Heladera;
 import ar.edu.utn.dds.k3003.model.incidentes.subtipos.SubtipoAlerta;
+import ar.edu.utn.dds.k3003.presentation.auxiliar.DTOs.FallaHeladeraDTO;
 import ar.edu.utn.dds.k3003.presentation.auxiliar.DTOs.HabilitacionDTO;
-import ar.edu.utn.dds.k3003.service.HeladeraService;
-import ar.edu.utn.dds.k3003.service.ImpresionService;
-import ar.edu.utn.dds.k3003.service.IncidentesService;
-import ar.edu.utn.dds.k3003.service.TemperaturaService;
+import ar.edu.utn.dds.k3003.presentation.auxiliar.DTOs.MovimientoDTO;
+import ar.edu.utn.dds.k3003.service.*;
 
 import lombok.Getter;
 
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.NoSuchElementException;
 
@@ -22,6 +23,7 @@ public class Fachada implements ar.edu.utn.dds.k3003.facades.FachadaHeladeras{
     private final TemperaturaService temperaturaService;
     private final IncidentesService incidentesService;
     private final ImpresionService impresionService;
+    private final NotificadorService notificadorService;
 
     private FachadaViandas fachadaViandas;
 
@@ -30,6 +32,7 @@ public class Fachada implements ar.edu.utn.dds.k3003.facades.FachadaHeladeras{
         this.temperaturaService = new TemperaturaService();
         this.incidentesService = new IncidentesService();
         this.impresionService = new ImpresionService();
+        this.notificadorService = new NotificadorService();
     }
 
     @Override
@@ -41,11 +44,13 @@ public class Fachada implements ar.edu.utn.dds.k3003.facades.FachadaHeladeras{
         return heladeraService.findDTOById(heladeraId);
     }
 
-    public HabilitacionDTO habilitar(Integer heladeraId){
-        return heladeraService.habilitar(heladeraId);
-    }
+    public HabilitacionDTO habilitar(Integer heladeraId){return heladeraService.habilitar(heladeraId);}
 
     public HabilitacionDTO inhabilitar(Integer heladeraId){
+
+        FallaHeladeraDTO falla = new FallaHeladeraDTO(heladeraId, LocalDateTime.now());
+        this.notificadorService.enviarFalla(falla);
+
         return heladeraService.inhabilitar(heladeraId);
     }
 
@@ -58,6 +63,10 @@ public class Fachada implements ar.edu.utn.dds.k3003.facades.FachadaHeladeras{
     public HabilitacionDTO generarIncidenteTecnico(Integer heladeraId){
         HabilitacionDTO nuevoEstado = heladeraService.inhabilitar(heladeraId);
         impresionService.imprimirIncidente(incidentesService.generarIncidente("TECNICO", heladeraId, null));
+
+        FallaHeladeraDTO falla = new FallaHeladeraDTO(heladeraId, LocalDateTime.now());
+        this.notificadorService.enviarFalla(falla);
+
         return nuevoEstado;
     }
 
@@ -71,6 +80,12 @@ public class Fachada implements ar.edu.utn.dds.k3003.facades.FachadaHeladeras{
         ViandaDTO vianda = this.fachadaViandas.buscarXQR(qrVianda);
         heladeraService.depositVianda(heladeraId);
         this.fachadaViandas.modificarEstado(vianda.getCodigoQR(), EstadoViandaEnum.DEPOSITADA);
+
+        Heladera heladera = this.heladeraService.findHeladeraById(heladeraId);
+
+        MovimientoDTO movimientoDTO = new MovimientoDTO(heladeraId, heladera.getCantidadDeViandas(), heladera.getCantidadDeViandasMaxima());
+
+        this.notificadorService.enviarMovimiento(movimientoDTO);
     }
 
     @Override
@@ -78,6 +93,13 @@ public class Fachada implements ar.edu.utn.dds.k3003.facades.FachadaHeladeras{
         ViandaDTO vianda = this.fachadaViandas.buscarXQR(retiroDTO.getQrVianda());
         heladeraService.withdrawVianda(retiroDTO.getHeladeraId());
         this.fachadaViandas.modificarEstado(vianda.getCodigoQR(), EstadoViandaEnum.RETIRADA);
+
+        Heladera heladera = this.heladeraService.findHeladeraById(retiroDTO.getHeladeraId());
+
+        MovimientoDTO movimientoDTO = new MovimientoDTO(retiroDTO.getHeladeraId(), heladera.getCantidadDeViandas(), heladera.getCantidadDeViandasMaxima());
+
+        this.notificadorService.enviarMovimiento(movimientoDTO);
+
     }
 
     @Override
