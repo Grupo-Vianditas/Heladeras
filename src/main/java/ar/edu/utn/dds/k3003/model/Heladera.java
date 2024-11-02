@@ -4,10 +4,7 @@ import ar.edu.utn.dds.k3003.model.errors.ErrorTipo;
 import ar.edu.utn.dds.k3003.model.errors.OperacionInvalidaException;
 import ar.edu.utn.dds.k3003.model.estados.Estado;
 import ar.edu.utn.dds.k3003.model.estados.Operaciones;
-import ar.edu.utn.dds.k3003.model.sensor.Sensor;
-import ar.edu.utn.dds.k3003.model.sensor.sensores.SensorConexion;
-import ar.edu.utn.dds.k3003.model.sensor.sensores.SensorMovimiento;
-import ar.edu.utn.dds.k3003.model.sensor.sensores.SensorTemperatura;
+
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.Setter;
@@ -56,12 +53,6 @@ public class Heladera {
     @Column(name = "ultimaTemperaturaRegistrada")
     private Integer ultimaTemperaturaRegistrada;
 
-    @Column(name = "umbralDemoraDesconexion")
-    private Integer umbralDesconexion;
-
-    @Column(name = "umbralDemoraTemperatura")
-    private Integer umbralTemperatura;
-
     @Column(name = "ultimaApertura", columnDefinition = "TIMESTAMP")
     private LocalDateTime ultimaApertura;
 
@@ -71,9 +62,6 @@ public class Heladera {
 
     @OneToMany(mappedBy = "heladera", cascade = {CascadeType.ALL}, fetch = FetchType.EAGER, orphanRemoval = true)
     private List<Temperatura> temperaturas;
-
-    @OneToMany(mappedBy = "heladera", cascade = {CascadeType.ALL}, fetch = FetchType.EAGER, orphanRemoval = true)
-    private List<Sensor> sensores;
 
     public Heladera() {}
 
@@ -92,9 +80,6 @@ public class Heladera {
         this.ultimaApertura = null;
         this.ultimaOperacion = Operaciones.SIN_MOVIMIENTOS;
         this.temperaturas = new ArrayList<>();
-        this.sensores = new ArrayList<>();
-
-        inicializarSensores();
 
         if (cantidadDeViandas != null) {
             if (cantidadDeViandas > this.cantidadDeViandasMaxima) {
@@ -107,12 +92,6 @@ public class Heladera {
         } else {
             this.cantidadDeViandas = 0;
         }
-    }
-
-    private void inicializarSensores() {
-        this.sensores.add(new SensorMovimiento());
-        this.sensores.add(new SensorConexion());
-        this.sensores.add(new SensorTemperatura());
     }
 
     public void agregarVianda() {
@@ -129,12 +108,6 @@ public class Heladera {
                     "No se pueden agregar más viandas a esta heladera."
             );
         }
-
-        this.sensores.stream()
-                .filter(sensor -> sensor instanceof SensorMovimiento)
-                .map(sensor -> (SensorMovimiento) sensor)
-                .findFirst()
-                .ifPresent(SensorMovimiento::verificarAlerta);
 
         if (this.getEstadoApertura() == Estado.CERRADA) {
             this.setEstadoApertura(Estado.ABIERTA);
@@ -160,12 +133,6 @@ public class Heladera {
             throw new OperacionInvalidaException(ErrorTipo.CANTIDAD_FALTANTE, "No se pueden retirar mas viandas de esta heladera.");
         }
 
-        this.sensores.stream()
-                .filter(sensor -> sensor instanceof SensorMovimiento)
-                .map(sensor -> (SensorMovimiento) sensor)
-                .findFirst()
-                .ifPresent(SensorMovimiento::verificarAlerta);
-
         if (this.getEstadoApertura() == Estado.CERRADA) {
             this.setEstadoApertura(Estado.ABIERTA);
         }
@@ -182,18 +149,6 @@ public class Heladera {
         temperatura.setHeladera(this);
         this.temperaturas.add(temperatura);
         this.ultimaTemperaturaRegistrada = temperatura.getTemperatura();
-
-        this.sensores.stream()
-                .filter(sensor -> sensor instanceof SensorTemperatura)
-                .map(sensor -> (SensorTemperatura) sensor)
-                .findFirst()
-                .ifPresent(sensorTemperatura -> sensorTemperatura.actualizarTemperatura(temperatura.getTemperatura()));
-
-        this.sensores.stream()
-                .filter(sensor -> sensor instanceof SensorConexion)
-                .map(sensor -> (SensorConexion) sensor)
-                .findFirst()
-                .ifPresent(sensorConexion -> sensorConexion.actualizarUltimaLectura(LocalDateTime.now()));
     }
 
     public void marcarInactiva(){

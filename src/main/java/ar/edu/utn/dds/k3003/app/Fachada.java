@@ -3,8 +3,11 @@ package ar.edu.utn.dds.k3003.app;
 import ar.edu.utn.dds.k3003.facades.FachadaViandas;
 import ar.edu.utn.dds.k3003.facades.dtos.*;
 
+import ar.edu.utn.dds.k3003.model.incidentes.subtipos.SubtipoAlerta;
 import ar.edu.utn.dds.k3003.presentation.auxiliar.DTOs.HabilitacionDTO;
 import ar.edu.utn.dds.k3003.service.HeladeraService;
+import ar.edu.utn.dds.k3003.service.ImpresionService;
+import ar.edu.utn.dds.k3003.service.IncidentesService;
 import ar.edu.utn.dds.k3003.service.TemperaturaService;
 
 import lombok.Getter;
@@ -17,11 +20,16 @@ public class Fachada implements ar.edu.utn.dds.k3003.facades.FachadaHeladeras{
 
     private final HeladeraService heladeraService;
     private final TemperaturaService temperaturaService;
+    private final IncidentesService incidentesService;
+    private final ImpresionService impresionService;
+
     private FachadaViandas fachadaViandas;
 
     public Fachada(){
         this.heladeraService = new HeladeraService();
         this.temperaturaService = new TemperaturaService();
+        this.incidentesService = new IncidentesService();
+        this.impresionService = new ImpresionService();
     }
 
     @Override
@@ -39,6 +47,18 @@ public class Fachada implements ar.edu.utn.dds.k3003.facades.FachadaHeladeras{
 
     public HabilitacionDTO inhabilitar(Integer heladeraId){
         return heladeraService.inhabilitar(heladeraId);
+    }
+
+    public HabilitacionDTO generarIncidenteAlerta(Integer heladeraId, SubtipoAlerta subtipoAlerta){
+        HabilitacionDTO nuevoEstado = heladeraService.inhabilitar(heladeraId);
+        impresionService.imprimirIncidente(incidentesService.generarIncidente("ALERTA", heladeraId, subtipoAlerta));
+        return nuevoEstado;
+    }
+
+    public HabilitacionDTO generarIncidenteTecnico(Integer heladeraId){
+        HabilitacionDTO nuevoEstado = heladeraService.inhabilitar(heladeraId);
+        impresionService.imprimirIncidente(incidentesService.generarIncidente("TECNICO", heladeraId, null));
+        return nuevoEstado;
     }
 
     @Override
@@ -76,6 +96,8 @@ public class Fachada implements ar.edu.utn.dds.k3003.facades.FachadaHeladeras{
         temperaturaService.clear();
         heladeraService.clear();
     }
+
+
 
     @Override
     public void setViandasProxy(FachadaViandas viandas){

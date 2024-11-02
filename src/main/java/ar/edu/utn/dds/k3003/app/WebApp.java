@@ -60,13 +60,13 @@ public class WebApp {
         var temperaturasController = new TemperaturasController(fachada, new TemperaturasCounter(metricsConfig));
         var mockerController = new MockerController(fachada, new OthersCounter(metricsConfig));
         var cleanerController = new CleanerController(fachada, new OthersCounter(metricsConfig));
-
+        var incidentesController = new IncidentesController(fachada, new IncidentesCounter(metricsConfig));
 
         // HeladerasController
         app.post("/heladeras", heladerasController::agregar);
         app.get("/heladeras/{heladeraId}", heladerasController::buscarXId);
 
-
+        // Entrega 5
         app.post("/heladeras/{heladeraId}/habilitar", heladerasController::habilitar);
         app.post("/heladeras/{heladeraId}/inhabilitar", heladerasController::inhabilitar);
 
@@ -83,6 +83,12 @@ public class WebApp {
 
         // CleanerController
         app.post("/clear", cleanerController::clear);
+
+        // IncidentesController
+        app.post("/incidentes/{heladeraId}/temperatura/", incidentesController::alertarTemperatura);
+        app.post("/incidentes/{heladeraId}/fraude", incidentesController::alertarFraude);
+        app.post("/incidentes/{heladeraId}/conexion",incidentesController::alertarConexion );
+        app.post("/incidentes/{heladeraId}/falla",incidentesController::falloTecnico);
 
         // Controller metricas
         app.get("/metrics", ctx -> {
