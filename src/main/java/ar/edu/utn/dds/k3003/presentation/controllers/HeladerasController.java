@@ -80,8 +80,10 @@ public class HeladerasController {
             manejarError(ctx, HttpStatus.BAD_REQUEST, 1, e.getMessage());
         } catch (ValidationException e) {
             manejarError(ctx, HttpStatus.BAD_REQUEST, 2, "Error de validación: " + e.getMessage());
-        } catch (javax.persistence.PersistenceException e){
+        } catch (javax.persistence.PersistenceException e) {
             manejarError(ctx, HttpStatus.BAD_REQUEST, 3, "Ya existe una heladera con ese nombre.");
+        } catch(IllegalStateException e){
+            manejarError(ctx, HttpStatus.BAD_REQUEST, 4, "Error de estado interno: "+e.getMessage());
         } catch (Exception e) {
             manejarError(ctx, HttpStatus.INTERNAL_SERVER_ERROR, 4, "Error inesperado: " + e.getMessage());
         }
@@ -123,7 +125,7 @@ public class HeladerasController {
     // Manejo centralizado de errores
     private void manejarError(Context ctx, HttpStatus status, int errorCode, String message) {
         ctx.status(status);
-        ctx.json(Map.of("status", "failed", "erorCode", errorCode, "message", message));
+        ctx.json(Map.of("status", "Failed", "erorCode", errorCode, "message", message));
         heladerasCounter.incrementFailedPostCounter();
     }
 }
