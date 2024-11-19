@@ -1,25 +1,27 @@
 package ar.edu.utn.dds.k3003.persistance.mappers;
 
-import ar.edu.utn.dds.k3003.facades.dtos.HeladeraDTO;
 import ar.edu.utn.dds.k3003.model.Heladera;
+import ar.edu.utn.dds.k3003.presentation.auxiliar.DTOs.heladera.CreateHeladeraDTO;
+import ar.edu.utn.dds.k3003.presentation.auxiliar.DTOs.heladera.ReturningHeladeraDTO;
 
 public class HeladeraMapper {
 
-    //Mapper HeladeraDTO -> Heladera
-    public Heladera toEntity(HeladeraDTO heladeraDTO){
+    //Mapper NewHeladeraDTO -> Heladera
+    public Heladera toEntity(CreateHeladeraDTO heladeraDTO){
         return new Heladera(
-                heladeraDTO.getId(),
                 heladeraDTO.getNombre(),
-                heladeraDTO.getCantidadDeViandas()
+                heladeraDTO.getCantidadDeViandas(),
+                heladeraDTO.getHabilitacion()
         );
     }
 
-    //Mapper Heladera -> HeladeraDTO
-    public HeladeraDTO toEntity(Heladera heladera){
-        return new HeladeraDTO(
+    //Mapper Heladera -> NewHeladeraDTO
+    public ReturningHeladeraDTO toEntity(Heladera heladera){
+        return new ReturningHeladeraDTO(
                 heladera.getHeladeraId(),
                 heladera.getNombre(),
-                heladera.getCantidadDeViandas()
+                heladera.getCantidadDeViandas(),
+                heladera.getHabilitacion()
         );
     }
 }

@@ -4,6 +4,6 @@ public enum Operaciones {
     DEPOSITO,
     RETIRO,
     SIN_MOVIMIENTOS,
-    ACTIVAR,
-    DESACTIVAR;
+    HABILITAR,
+    DESHABILITAR;
 }

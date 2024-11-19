@@ -8,6 +8,8 @@ import ar.edu.utn.dds.k3003.model.incidentes.subtipos.SubtipoAlerta;
 import ar.edu.utn.dds.k3003.presentation.auxiliar.DTOs.FallaHeladeraDTO;
 import ar.edu.utn.dds.k3003.presentation.auxiliar.DTOs.HabilitacionDTO;
 import ar.edu.utn.dds.k3003.presentation.auxiliar.DTOs.MovimientoDTO;
+import ar.edu.utn.dds.k3003.presentation.auxiliar.DTOs.heladera.CreateHeladeraDTO;
+import ar.edu.utn.dds.k3003.presentation.auxiliar.DTOs.heladera.ReturningHeladeraDTO;
 import ar.edu.utn.dds.k3003.service.*;
 
 import lombok.Getter;
@@ -35,30 +37,40 @@ public class Fachada implements ar.edu.utn.dds.k3003.facades.FachadaHeladeras{
         this.notificadorService = new NotificadorService();
     }
 
+    //Deprecado porque ahora devuelve un NewHeladeraDTO
     @Override
     public HeladeraDTO agregar(HeladeraDTO heladeraDTO) {
-       return heladeraService.createAndSave(heladeraDTO);
+       return heladeraDTO;
     }
 
-    public HeladeraDTO buscarXId(Integer heladeraId){
+    // Nuevo metodo
+    public ReturningHeladeraDTO agregar(CreateHeladeraDTO heladeraDTO){
+        return heladeraService.createAndSave(heladeraDTO);
+    }
+
+    // Nuevo metodo
+    public ReturningHeladeraDTO buscarXId(Integer heladeraId){
         return heladeraService.findDTOById(heladeraId);
     }
 
-    public HabilitacionDTO habilitar(Integer heladeraId){return heladeraService.habilitar(heladeraId);}
+    // Nuevo metodo
+    public HabilitacionDTO habilitar(Integer heladeraId){
+        return heladeraService.habilitar(heladeraId);
+    }
 
     public HabilitacionDTO inhabilitar(Integer heladeraId){
         this.notificadorService.enviarFalla(new FallaHeladeraDTO(heladeraId, LocalDateTime.now()));
-        return heladeraService.inhabilitar(heladeraId);
+        return heladeraService.deshabilitar(heladeraId);
     }
 
     public HabilitacionDTO generarIncidenteAlerta(Integer heladeraId, SubtipoAlerta subtipoAlerta){
-        HabilitacionDTO nuevoEstado = heladeraService.inhabilitar(heladeraId);
+        HabilitacionDTO nuevoEstado = heladeraService.deshabilitar(heladeraId);
         impresionService.imprimirIncidente(incidentesService.generarIncidente("ALERTA", heladeraId, subtipoAlerta));
         return nuevoEstado;
     }
 
     public HabilitacionDTO generarIncidenteTecnico(Integer heladeraId){
-        HabilitacionDTO nuevoEstado = heladeraService.inhabilitar(heladeraId);
+        HabilitacionDTO nuevoEstado = heladeraService.deshabilitar(heladeraId);
         impresionService.imprimirIncidente(incidentesService.generarIncidente("TECNICO", heladeraId, null));
 
         this.notificadorService.enviarFalla(new FallaHeladeraDTO(heladeraId, LocalDateTime.now()));
@@ -106,8 +118,6 @@ public class Fachada implements ar.edu.utn.dds.k3003.facades.FachadaHeladeras{
         temperaturaService.clear();
         heladeraService.clear();
     }
-
-
 
     @Override
     public void setViandasProxy(FachadaViandas viandas){

@@ -1,12 +1,13 @@
 package ar.edu.utn.dds.k3003.service;
 
-import ar.edu.utn.dds.k3003.facades.dtos.HeladeraDTO;
 import ar.edu.utn.dds.k3003.model.Heladera;
 import ar.edu.utn.dds.k3003.persistance.repos.heladeras.HeladeraRepositoryImpl;
 import ar.edu.utn.dds.k3003.persistance.mappers.HeladeraMapper;
 
 import ar.edu.utn.dds.k3003.presentation.auxiliar.DTOs.Enums.HabilitacionEnum;
 import ar.edu.utn.dds.k3003.presentation.auxiliar.DTOs.HabilitacionDTO;
+import ar.edu.utn.dds.k3003.presentation.auxiliar.DTOs.heladera.CreateHeladeraDTO;
+import ar.edu.utn.dds.k3003.presentation.auxiliar.DTOs.heladera.ReturningHeladeraDTO;
 
 
 import java.util.NoSuchElementException;
@@ -21,25 +22,17 @@ public class HeladeraService {
         repo = new HeladeraRepositoryImpl();
     }
 
-    public Heladera create(HeladeraDTO heladeraDTO){
-        return mapper.toEntity(heladeraDTO);
-    }
-
-    public HeladeraDTO createDTO(Heladera heladera){
-        return mapper.toEntity(heladera);
-    }
-
     public void save(Heladera heladera){
         repo.save(heladera);
     }
 
-    public HeladeraDTO createAndSave(HeladeraDTO heladeraDTO){
-        Heladera heladera = create(heladeraDTO);
+    public ReturningHeladeraDTO createAndSave(CreateHeladeraDTO heladeraDTO){
+        Heladera heladera = mapper.toEntity(heladeraDTO);
         save(heladera);
-        return createDTO(heladera);
+        return mapper.toEntity(heladera);
     }
 
-    public HeladeraDTO findDTOById(Integer heladeraId) throws NoSuchElementException{
+    public ReturningHeladeraDTO findDTOById(Integer heladeraId) throws NoSuchElementException{
         return mapper.toEntity(repo.getById(heladeraId));
     }
 
@@ -65,14 +58,14 @@ public class HeladeraService {
 
     public HabilitacionDTO habilitar(Integer heladeraId){
         Heladera heladera = findHeladeraById(heladeraId);
-        heladera.marcarActiva();
+        heladera.habilitar();
         updateHeladera(heladera);
         return new HabilitacionDTO(heladeraId, HabilitacionEnum.HABILITADA);
     }
 
-    public HabilitacionDTO inhabilitar(Integer heladeraId){
+    public HabilitacionDTO deshabilitar(Integer heladeraId){
         Heladera heladera = findHeladeraById(heladeraId);
-        heladera.marcarInactiva();
+        heladera.deshabilitar();
         updateHeladera(heladera);
         return new HabilitacionDTO(heladeraId, HabilitacionEnum.INHABILITADA);
     }

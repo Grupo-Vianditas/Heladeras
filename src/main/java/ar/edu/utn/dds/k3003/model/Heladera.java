@@ -5,6 +5,7 @@ import ar.edu.utn.dds.k3003.model.errors.OperacionInvalidaException;
 import ar.edu.utn.dds.k3003.model.estados.Estado;
 import ar.edu.utn.dds.k3003.model.estados.Operaciones;
 
+import ar.edu.utn.dds.k3003.model.heladera.HabilitacionEnum;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.Setter;
@@ -47,8 +48,9 @@ public class Heladera {
     @Column(name = "fechaDeFuncionamiento", columnDefinition = "TIMESTAMP")
     private LocalDateTime fechaDeFuncionamiento;
 
+    @Enumerated(EnumType.STRING)
     @Column(name = "estadoOperacional")
-    private Boolean estadoOperacional;
+    private HabilitacionEnum habilitacion;
 
     @Column(name = "ultimaTemperaturaRegistrada")
     private Integer ultimaTemperaturaRegistrada;
@@ -66,17 +68,16 @@ public class Heladera {
     public Heladera() {}
 
     public Heladera(
-            Integer heladeraId,
             String nombre,
-            Integer cantidadDeViandas
+            Integer cantidadDeViandas,
+            HabilitacionEnum habilitacion
     ) {
-        this.heladeraId = heladeraId;
         this.nombre = nombre;
-        this.cantidadDeViandas = (cantidadDeViandas != null) ? cantidadDeViandas : 0;
+        this.cantidadDeViandas = cantidadDeViandas;
         this.estadoApertura = Estado.CERRADA;
         this.cantidadDeViandasMaxima = 10;
         this.fechaDeFuncionamiento = LocalDateTime.now();
-        this.estadoOperacional = true;
+        this.habilitacion = habilitacion;
         this.ultimaApertura = null;
         this.ultimaOperacion = Operaciones.SIN_MOVIMIENTOS;
         this.temperaturas = new ArrayList<>();
@@ -94,8 +95,13 @@ public class Heladera {
         }
     }
 
+    public boolean estaHabilitada(){
+        return this.habilitacion == HabilitacionEnum.HABILITADA;
+    }
+
+
     public void agregarVianda() {
-        if (!this.estadoOperacional){
+        if (!estaHabilitada()){
             throw new OperacionInvalidaException(
                     ErrorTipo.HELADERA_INACTIVA,
                     "La heladera se encuentra inactiva."
@@ -109,66 +115,56 @@ public class Heladera {
             );
         }
 
-        if (this.getEstadoApertura() == Estado.CERRADA) {
-            this.setEstadoApertura(Estado.ABIERTA);
-        }
-
         this.setCantidadDeViandas(this.getCantidadDeViandas() + 1);
-
-        this.setEstadoApertura(Estado.CERRADA);
-
         this.setUltimaOperacion(Operaciones.DEPOSITO);
         this.setUltimaApertura(LocalDateTime.now());
     }
 
     public void retirarVianda() throws OperacionInvalidaException {
-        if (!this.estadoOperacional){
+        if (!estaHabilitada()){
             throw new OperacionInvalidaException(
                     ErrorTipo.HELADERA_INACTIVA,
                     "La heladera se encuentra inactiva."
             );
-        }
-
-        if (this.getCantidadDeViandas() < 0) {
+        } else if (this.getCantidadDeViandas() < 0) {
             throw new OperacionInvalidaException(ErrorTipo.CANTIDAD_FALTANTE, "No se pueden retirar mas viandas de esta heladera.");
+
+        } else {
+            this.setCantidadDeViandas(this.getCantidadDeViandas() - 1);
+            this.setUltimaOperacion(Operaciones.RETIRO);
+            this.setUltimaApertura(LocalDateTime.now());
         }
-
-        if (this.getEstadoApertura() == Estado.CERRADA) {
-            this.setEstadoApertura(Estado.ABIERTA);
-        }
-
-        this.setCantidadDeViandas(this.getCantidadDeViandas() - 1);
-
-        this.setEstadoApertura(Estado.CERRADA);
-
-        this.setUltimaOperacion(Operaciones.RETIRO);
-        this.setUltimaApertura(LocalDateTime.now());
     }
 
     public void agregarTemperatura(Temperatura temperatura){
-        temperatura.setHeladera(this);
-        this.temperaturas.add(temperatura);
-        this.ultimaTemperaturaRegistrada = temperatura.getTemperatura();
+        if (!estaHabilitada()){
+            throw new OperacionInvalidaException(
+                    ErrorTipo.HELADERA_INACTIVA,
+                    "La heladera se encuentra inactiva."
+            );
+        }else{
+            temperatura.setHeladera(this);
+            this.temperaturas.add(temperatura);
+            this.ultimaTemperaturaRegistrada = temperatura.getTemperatura();
+        }
     }
 
-    public void marcarInactiva(){
-        if (estadoOperacional){
-            this.estadoOperacional = false;
-            this.ultimaOperacion = Operaciones.DESACTIVAR;
+    public void deshabilitar(){
+        if (estaHabilitada()){
+            this.habilitacion = HabilitacionEnum.DESHABILITADA;
+            this.ultimaOperacion = Operaciones.DESHABILITAR;
         } else {
-            throw new IllegalStateException("La heladera ya se encuentra inactiva");
+            throw new IllegalStateException("La heladera ya se encuentra deshabilitada");
         }
-        // Agregar logs
     }
 
-    public void marcarActiva(){
-        if (!estadoOperacional){
-            this.estadoOperacional = true;
-            this.ultimaOperacion = Operaciones.ACTIVAR;
+    public void habilitar(){
+        if (!estaHabilitada()){
+            this.habilitacion = HabilitacionEnum.HABILITADA;
+            this.ultimaOperacion = Operaciones.HABILITAR;
         } else {
-            throw new IllegalStateException("La heladera ya se encuentra activa");
+            throw new IllegalStateException("La heladera ya se encuentra habilitada");
         }
-        // Agregar logs
     }
 
 

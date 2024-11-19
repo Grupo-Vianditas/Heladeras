@@ -12,7 +12,4 @@ public interface HeladeraRepository {
     Heladera getById(Integer id);
 
     Integer getCantidadViandas(Integer heladeraId);
-
-    void open(Integer heladeraId);
-    void close(Integer heladeraId);
 }
