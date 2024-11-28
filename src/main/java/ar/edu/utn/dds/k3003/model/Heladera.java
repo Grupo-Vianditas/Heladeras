@@ -99,7 +99,6 @@ public class Heladera {
         return this.habilitacion == HabilitacionEnum.HABILITADA;
     }
 
-
     public void agregarVianda() {
         if (!estaHabilitada()){
             throw new OperacionInvalidaException(
@@ -108,16 +107,16 @@ public class Heladera {
             );
         }
 
-        if (this.getCantidadDeViandas() + 1 > this.getCantidadDeViandasMaxima()) {
+        if (getCantidadDeViandas() + 1 > getCantidadDeViandasMaxima()) {
             throw new OperacionInvalidaException(
                     ErrorTipo.CANTIDAD_EXCESIVA,
                     "No se pueden agregar más viandas a esta heladera."
             );
         }
 
-        this.setCantidadDeViandas(this.getCantidadDeViandas() + 1);
-        this.setUltimaOperacion(Operaciones.DEPOSITO);
-        this.setUltimaApertura(LocalDateTime.now());
+        setCantidadDeViandas(this.cantidadDeViandas + 1);
+        setUltimaOperacion(Operaciones.DEPOSITO);
+        setUltimaApertura(LocalDateTime.now());
     }
 
     public void retirarVianda() throws OperacionInvalidaException {

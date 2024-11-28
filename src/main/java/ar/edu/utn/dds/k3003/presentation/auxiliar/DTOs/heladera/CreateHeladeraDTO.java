@@ -15,4 +15,9 @@ public class CreateHeladeraDTO {
 
     public CreateHeladeraDTO(){}
 
+    public CreateHeladeraDTO(String nombre) {
+        this.nombre = nombre;
+        this.cantidadDeViandas = 0;
+        this.habilitacion = HabilitacionEnum.HABILITADA;
+    }
 }

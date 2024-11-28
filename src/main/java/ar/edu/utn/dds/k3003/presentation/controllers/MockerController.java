@@ -1,87 +1,88 @@
 package ar.edu.utn.dds.k3003.presentation.controllers;
 
 import ar.edu.utn.dds.k3003.app.Fachada;
-import ar.edu.utn.dds.k3003.facades.dtos.HeladeraDTO;
 import ar.edu.utn.dds.k3003.facades.dtos.TemperaturaDTO;
-import ar.edu.utn.dds.k3003.presentation.auxiliar.ErrorHandler;
-import ar.edu.utn.dds.k3003.presentation.metrics.controllersCounters.OthersCounter;
+import ar.edu.utn.dds.k3003.presentation.auxiliar.DTOs.heladera.CreateHeladeraDTO;
+import ar.edu.utn.dds.k3003.presentation.auxiliar.DTOs.heladera.ReturningHeladeraDTO;
+import ar.edu.utn.dds.k3003.presentation.controllers.baseController.BaseController;
+import ar.edu.utn.dds.k3003.service.MetricsService;
 import io.javalin.http.Context;
 import io.javalin.http.HttpStatus;
 
-import java.util.HashMap;
 import java.util.Map;
 import java.util.List;
-import java.util.ArrayList;
 
 import java.time.LocalDateTime;
 import java.util.Random;
+import java.util.stream.Collectors;
+import java.util.stream.IntStream;
 
-public class MockerController {
+public class MockerController extends BaseController {
 
-    private final Fachada fachada;
-    private OthersCounter mockerCounter;
     private static final String CHARACTERS = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
     private static final int SALT_LENGTH = 5;
+    private static final int MIN_TEMPERATURE = -50;
+    private static final int MAX_TEMPERATURE = 50;
+    private static final int NUM_HELADERAS = 4;
+    private static final int NUM_TEMPERATURAS = 3;
 
-    public MockerController(Fachada fachada, OthersCounter mockerCounter) {
+    private final Fachada fachada;
+    private final Random random;
+
+    public MockerController(Fachada fachada, MetricsService metricsService) {
+        super(metricsService);
         this.fachada = fachada;
-        this.mockerCounter = mockerCounter;
+        this.random = new Random();
+    }
+
+    public void mockTestObjects(Context ctx) {
+        handleRequest(ctx, "/mocker/mockTestObjects", "GET", () -> {
+            List<Map<String, Object>> heladeras = generateMockHeladeras(NUM_HELADERAS);
+            ctx.json(Map.of("heladeras", heladeras));
+        });
+    }
+
+    private List<Map<String, Object>> generateMockHeladeras(int count) {
+        return IntStream.range(0, count)
+                .mapToObj(i -> createMockHeladera())
+                .toList();
+    }
+
+    private Map<String, Object> createMockHeladera() {
+        String salt = generateSalt();
+        ReturningHeladeraDTO heladera = fachada.agregar(new CreateHeladeraDTO("prueba_" + salt));
+
+        return Map.of(
+                "heladera", extractHeladeraData(heladera),
+                "temperaturas", generateMockTemperaturas(heladera.getHeladeraId(), NUM_TEMPERATURAS)
+        );
+    }
+
+    private Map<String, Object> extractHeladeraData(ReturningHeladeraDTO heladera) {
+        return Map.of(
+                "heladeraId", heladera.getHeladeraId(),
+                "nombre", heladera.getNombre(),
+                "viandas", heladera.getCantidadDeViandas(),
+                "habilitacion", heladera.getHabilitacion()
+        );
+    }
+
+    private List<Integer> generateMockTemperaturas(Integer heladeraId, int count) {
+        return IntStream.range(0, count)
+                .mapToObj(i -> createMockTemperatura(heladeraId))
+                .toList();
+    }
+
+    private int createMockTemperatura(Integer heladeraId) {
+        int temperatura = random.nextInt(MAX_TEMPERATURE - MIN_TEMPERATURE + 1) + MIN_TEMPERATURE;
+        fachada.temperatura(new TemperaturaDTO(temperatura, heladeraId, LocalDateTime.now()));
+        return temperatura;
     }
 
     private String generateSalt() {
-        Random random = new Random();
-        StringBuilder salt = new StringBuilder(SALT_LENGTH);
-        for (int i = 0; i < SALT_LENGTH; i++) {
-            int randomIndex = random.nextInt(CHARACTERS.length());
-            salt.append(CHARACTERS.charAt(randomIndex));
-        }
-        return salt.toString();
-    }
-
-    // ################
-    // Update 4/10/24: respuesta de controller:
-    // 0: Devuelve la lista de heladeras y 3 temperaturas aleatorias.
-    // 3: Errores varios, no hay mucho para probar en este punto.
-    // ################
-
-    public void mockTestObjects(Context ctx) {
-        try {
-
-            List<Map<String, Object>> heladeras = new ArrayList<>();
-            Random random = new Random();
-
-            for (int i = 0; i < 4; i++) {
-                Map<String, Object> heladeraMap = new HashMap<>();
-
-                String salt = generateSalt();
-                HeladeraDTO heladera = this.fachada.agregar(new HeladeraDTO("prueba_" + salt));
-
-                Map<String, Object> heladeraData = new HashMap<>();
-                heladeraData.put("id", heladera.getId());
-                heladeraData.put("nombre", heladera.getNombre());
-                heladeraData.put("viandas", heladera.getCantidadDeViandas());
-
-                heladeraMap.put("heladera", heladeraData);
-
-                List<Integer> listaDeTemperaturas = new ArrayList<>();
-                for (int t = 0; t < 3; t++) {
-                    int temperaturaAleatoria = random.nextInt(101) - 50;  // Generar entre -50 y 50
-                    this.fachada.temperatura(new TemperaturaDTO(temperaturaAleatoria, heladera.getId(), LocalDateTime.now()));
-                    listaDeTemperaturas.add(temperaturaAleatoria);
-                }
-
-                heladeraMap.put("temperaturas", listaDeTemperaturas);
-                heladeras.add(heladeraMap);
-            }
-
-            Map<String, Object> jsonResponse = new HashMap<>();
-            jsonResponse.put("heladeras", heladeras);
-
-            ctx.json(jsonResponse);
-            mockerCounter.incrementSuccessfulMockCounter();
-        } catch (Exception e) {
-            ErrorHandler.manejarError(ctx, HttpStatus.INTERNAL_SERVER_ERROR, 3, "Error no contemplado: " + e);
-            mockerCounter.incrementFailedMockCounter();
-        }
+        return random.ints(SALT_LENGTH, 0, CHARACTERS.length())
+                .mapToObj(CHARACTERS::charAt)
+                .map(String::valueOf)
+                .collect(Collectors.joining());
     }
 }

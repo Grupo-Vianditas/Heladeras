@@ -59,7 +59,7 @@ public class Fachada implements ar.edu.utn.dds.k3003.facades.FachadaHeladeras{
     }
 
     public HabilitacionDTO inhabilitar(Integer heladeraId){
-        this.notificadorService.enviarFalla(new FallaHeladeraDTO(heladeraId, LocalDateTime.now()));
+        notificadorService.enviarFalla(new FallaHeladeraDTO(heladeraId, LocalDateTime.now()));
         return heladeraService.deshabilitar(heladeraId);
     }
 
@@ -73,7 +73,7 @@ public class Fachada implements ar.edu.utn.dds.k3003.facades.FachadaHeladeras{
         HabilitacionDTO nuevoEstado = heladeraService.deshabilitar(heladeraId);
         impresionService.imprimirIncidente(incidentesService.generarIncidente("TECNICO", heladeraId, null));
 
-        this.notificadorService.enviarFalla(new FallaHeladeraDTO(heladeraId, LocalDateTime.now()));
+        notificadorService.enviarFalla(new FallaHeladeraDTO(heladeraId, LocalDateTime.now()));
         return nuevoEstado;
     }
 
@@ -84,22 +84,22 @@ public class Fachada implements ar.edu.utn.dds.k3003.facades.FachadaHeladeras{
 
     @Override
     public void depositar(Integer heladeraId, String qrVianda) throws NoSuchElementException {
-        ViandaDTO vianda = this.fachadaViandas.buscarXQR(qrVianda);
+        ViandaDTO vianda = fachadaViandas.buscarXQR(qrVianda);
         heladeraService.depositVianda(heladeraId);
-        this.fachadaViandas.modificarEstado(vianda.getCodigoQR(), EstadoViandaEnum.DEPOSITADA);
+        fachadaViandas.modificarEstado(vianda.getCodigoQR(), EstadoViandaEnum.DEPOSITADA);
 
-        Heladera heladera = this.heladeraService.findHeladeraById(heladeraId);
-        this.notificadorService.enviarMovimiento(new MovimientoDTO(heladeraId, heladera.getCantidadDeViandas(), heladera.getCantidadDeViandasMaxima()));
+        Heladera heladera = heladeraService.findHeladeraById(heladeraId);
+        notificadorService.enviarMovimiento(new MovimientoDTO(heladeraId, heladera.getCantidadDeViandas(), heladera.getCantidadDeViandasMaxima()));
     }
 
     @Override
     public void retirar(RetiroDTO retiroDTO) throws NoSuchElementException {
         ViandaDTO vianda = this.fachadaViandas.buscarXQR(retiroDTO.getQrVianda());
         heladeraService.withdrawVianda(retiroDTO.getHeladeraId());
-        this.fachadaViandas.modificarEstado(vianda.getCodigoQR(), EstadoViandaEnum.RETIRADA);
+        fachadaViandas.modificarEstado(vianda.getCodigoQR(), EstadoViandaEnum.RETIRADA);
 
         Heladera heladera = this.heladeraService.findHeladeraById(retiroDTO.getHeladeraId());
-        this.notificadorService.enviarMovimiento(new MovimientoDTO(retiroDTO.getHeladeraId(), heladera.getCantidadDeViandas(), heladera.getCantidadDeViandasMaxima()));
+        notificadorService.enviarMovimiento(new MovimientoDTO(retiroDTO.getHeladeraId(), heladera.getCantidadDeViandas(), heladera.getCantidadDeViandasMaxima()));
     }
 
     @Override

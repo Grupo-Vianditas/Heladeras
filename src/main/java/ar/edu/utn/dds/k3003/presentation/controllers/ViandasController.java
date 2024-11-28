@@ -2,59 +2,40 @@ package ar.edu.utn.dds.k3003.presentation.controllers;
 
 import ar.edu.utn.dds.k3003.app.Fachada;
 import ar.edu.utn.dds.k3003.facades.dtos.RetiroDTO;
-import ar.edu.utn.dds.k3003.presentation.auxiliar.ContextMappers.ViandaDTOMapper;
+import ar.edu.utn.dds.k3003.facades.dtos.ViandaDTO;
 
-import ar.edu.utn.dds.k3003.presentation.auxiliar.ErrorHandler;
-import ar.edu.utn.dds.k3003.presentation.metrics.controllersCounters.ViandasCounter;
+import ar.edu.utn.dds.k3003.presentation.controllers.baseController.BaseController;
+import ar.edu.utn.dds.k3003.service.MetricsService;
+
 import io.javalin.http.Context;
 import io.javalin.http.HttpStatus;
 
-import javax.persistence.NoResultException;
 import java.util.Map;
-import java.util.NoSuchElementException;
 
-public class ViandasController {
+public class ViandasController extends BaseController {
 
-    private Fachada fachada;
-    private ViandasCounter viandasCounter;
-    private ViandaDTOMapper viandaDTOMapper;
+    private final Fachada fachada;
 
-    public ViandasController(Fachada fachada, ViandasCounter viandasCounter){
+    public ViandasController(Fachada fachada, MetricsService metricsService) {
+        super(metricsService);
         this.fachada = fachada;
-        this.viandasCounter = viandasCounter;
-        this.viandaDTOMapper = new ViandaDTOMapper();
     }
 
     public void depositar(Context ctx) {
-        try {
-            var viandaDTO = viandaDTOMapper.mapper(ctx); // Eso si que no lo cambio.
-            this.fachada.depositar(viandaDTO.getHeladeraId(), viandaDTO.getCodigoQR());
-            ctx.status(HttpStatus.OK);
+        handleRequest(ctx, "/depositar", "POST", () -> {
+            ViandaDTO viandaDTO = parseBody(ctx, ViandaDTO.class);
+            fachada.depositar(viandaDTO.getHeladeraId(), viandaDTO.getCodigoQR());
             ctx.json(Map.of("Status", "Done"));
-            viandasCounter.incrementSuccessfulPostCounter();
-        }catch(NoResultException e) {
-            ErrorHandler.manejarError(ctx, HttpStatus.BAD_REQUEST, 1, "Error de solicitud");
-            viandasCounter.incrementFailedPostCounter();
-        } catch (Exception e) {
-            ErrorHandler.manejarError(ctx, HttpStatus.INTERNAL_SERVER_ERROR, 3, "Error no contemplado: " + e);
-            viandasCounter.incrementFailedPostCounter();
-        }
+            ctx.status(HttpStatus.OK);
+        });
     }
 
     public void retirar(Context ctx) {
-        try {
-            this.fachada.retirar(
-                    ctx.bodyAsClass(RetiroDTO.class)
-            );
-            ctx.status(HttpStatus.OK);
+        handleRequest(ctx, "/retirar", "POST", () -> {
+            RetiroDTO retiroDTO = parseBody(ctx, RetiroDTO.class);
+            fachada.retirar(retiroDTO);
             ctx.json(Map.of("Status", "Done"));
-            viandasCounter.incrementSuccessfulGetCounter();
-        }catch(NoSuchElementException | IllegalArgumentException e) {
-            ErrorHandler.manejarError(ctx, HttpStatus.BAD_REQUEST, 1, "Error de solicitud");
-            viandasCounter.incrementFailedGetCounter();
-        } catch (Exception e) {
-            ErrorHandler.manejarError(ctx, HttpStatus.INTERNAL_SERVER_ERROR, 3, "Error no contemplado: " + e);
-            viandasCounter.incrementFailedGetCounter();
-        }
+            ctx.status(HttpStatus.OK);
+        });
     }
 }

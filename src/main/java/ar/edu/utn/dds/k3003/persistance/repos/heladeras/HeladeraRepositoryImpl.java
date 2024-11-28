@@ -1,11 +1,7 @@
 package ar.edu.utn.dds.k3003.persistance.repos.heladeras;
 
 import ar.edu.utn.dds.k3003.model.Heladera;
-import ar.edu.utn.dds.k3003.model.errors.ErrorTipo;
-import ar.edu.utn.dds.k3003.model.errors.OperacionInvalidaException;
-import ar.edu.utn.dds.k3003.model.estados.Estado;
 import ar.edu.utn.dds.k3003.persistance.utils.PersistenceUtils;
-import org.hibernate.boot.model.naming.IllegalIdentifierException;
 
 import javax.persistence.EntityManager;
 import javax.persistence.EntityManagerFactory;
@@ -22,13 +18,19 @@ public class HeladeraRepositoryImpl implements HeladeraRepository {
         em.getTransaction().begin();
         try {
             if (heladera.getHeladeraId() == null) {
+                Heladera existingHeladera = em.createQuery("SELECT h FROM Heladera h WHERE h.nombre = :nombre", Heladera.class)
+                        .setParameter("nombre", heladera.getNombre())
+                        .getResultStream()
+                        .findFirst()
+                        .orElse(null);
+
+                if (existingHeladera != null) {
+                    throw new IllegalArgumentException("Ya existe una heladera con el nombre: " + heladera.getNombre());
+                }
+
                 em.persist(heladera);
             } else {
-                if (em.find(Heladera.class, heladera.getHeladeraId()) == null) {
-                    throw new IllegalArgumentException("No se puede almacenar una heladera con id asignado por el usuario ");
-                } else {
-                    throw new IllegalIdentifierException("Ya existe la heladera con el id: " + heladera.getHeladeraId());
-                }
+                throw new IllegalArgumentException("No podes asignar un id.");
             }
             em.getTransaction().commit();
         } catch (RuntimeException e) {
@@ -40,6 +42,7 @@ public class HeladeraRepositoryImpl implements HeladeraRepository {
             }
         }
     }
+
 
     @Override
     public void modify(Heladera heladera) {

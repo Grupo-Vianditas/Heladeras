@@ -9,10 +9,10 @@ import ar.edu.utn.dds.k3003.clients.ViandasProxy;
 import ar.edu.utn.dds.k3003.facades.dtos.Constants;
 import ar.edu.utn.dds.k3003.presentation.controllers.*;
 import ar.edu.utn.dds.k3003.presentation.metrics.MetricsConfig;
-import ar.edu.utn.dds.k3003.presentation.metrics.controllersCounters.*;
 
-import ar.edu.utn.dds.k3003.presentation.metrics.heartbeat.ApplicationHealthCheck;
+import ar.edu.utn.dds.k3003.presentation.metrics.controllersCounters.MetricsFactory;
 import ar.edu.utn.dds.k3003.presentation.metrics.queueCounters.QueueCounter;
+import ar.edu.utn.dds.k3003.service.MetricsService;
 import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
@@ -41,26 +41,27 @@ public class WebApp {
         // Iniciazar las metricas
         MetricsConfig metricsConfig = new MetricsConfig();
         PrometheusMeterRegistry registry = metricsConfig.getRegistry();
+        MetricsFactory metricsFactory = new MetricsFactory(registry);
+        MetricsService metricsService = new MetricsService(metricsFactory);
 
         var objectMapper = createObjectMapper();
         fachada.setViandasProxy(new ViandasProxy(objectMapper));
 
         var port = Integer.parseInt(env.getOrDefault("PORT", "8080"));
 
-        ApplicationHealthCheck healthCheck = new ApplicationHealthCheck(registry);
-
         var app = Javalin.create(config -> {
             config.jsonMapper(new JavalinJackson().updateMapper(WebApp::configureObjectMapper));
             config.registerPlugin(new MicrometerPlugin(micrometerConfig -> micrometerConfig.registry = registry));
         }).start(port);
 
+
         // Instancio los controllers
-        var heladerasController = new HeladerasController(fachada, new HeladerasCounter(metricsConfig));
-        var viandasController = new ViandasController(fachada, new ViandasCounter(metricsConfig));
-        var temperaturasController = new TemperaturasController(fachada, new TemperaturasCounter(metricsConfig));
-        var mockerController = new MockerController(fachada, new OthersCounter(metricsConfig));
-        var cleanerController = new CleanerController(fachada, new OthersCounter(metricsConfig));
-        var incidentesController = new IncidentesController(fachada, new IncidentesCounter(metricsConfig));
+        var heladerasController = new HeladerasController(fachada, metricsService);
+        var viandasController = new ViandasController(fachada, metricsService);
+        var temperaturasController = new TemperaturasController(fachada, metricsService);
+        var mockerController = new MockerController(fachada, metricsService);
+        var cleanerController = new CleanerController(fachada, metricsService);
+        var incidentesController = new IncidentesController(fachada, metricsService);
 
         // HeladerasController
         app.post("/heladeras", heladerasController::agregar);
@@ -68,7 +69,7 @@ public class WebApp {
 
         // Entrega 5
         app.post("/heladeras/{heladeraId}/habilitar", heladerasController::habilitar);
-        app.post("/heladeras/{heladeraId}/inhabilitar", heladerasController::inhabilitar);
+        app.post("/heladeras/{heladeraId}/deshabilitar", heladerasController::deshabilitar);
 
         // ViandasController
         app.post("/depositos", viandasController::depositar);
