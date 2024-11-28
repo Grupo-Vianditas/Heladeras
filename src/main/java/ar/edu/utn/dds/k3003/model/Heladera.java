@@ -2,7 +2,7 @@ package ar.edu.utn.dds.k3003.model;
 
 import ar.edu.utn.dds.k3003.model.errors.ErrorTipo;
 import ar.edu.utn.dds.k3003.model.errors.OperacionInvalidaException;
-import ar.edu.utn.dds.k3003.model.estados.Estado;
+
 import ar.edu.utn.dds.k3003.model.estados.Operaciones;
 
 import ar.edu.utn.dds.k3003.model.heladera.HabilitacionEnum;
@@ -34,9 +34,6 @@ public class Heladera {
     @NotNull
     @Column(unique=true)
     private String nombre;
-
-    @Column(name = "estadoApertura")
-    private Estado estadoApertura;
 
     @Min(0)
     @Column(name = "cantidadDeViandasDepositadas")
@@ -74,7 +71,6 @@ public class Heladera {
     ) {
         this.nombre = nombre;
         this.cantidadDeViandas = cantidadDeViandas;
-        this.estadoApertura = Estado.CERRADA;
         this.cantidadDeViandasMaxima = 10;
         this.fechaDeFuncionamiento = LocalDateTime.now();
         this.habilitacion = habilitacion;
