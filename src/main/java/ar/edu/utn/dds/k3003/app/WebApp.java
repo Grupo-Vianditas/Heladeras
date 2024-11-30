@@ -135,8 +135,8 @@ public class WebApp {
             }
         }
 
-        //CronService cron = new CronService();
-        //cron.startJob(env.getOrDefault("ENDPOINT_ALERTAS", "https//localhost:8080/incidentes/notificarAlerta"));
+        CronService cron = new CronService();
+        cron.startJob(env.getOrDefault("ENDPOINT_ALERTAS", "https//localhost:8080/incidentes/notificarAlerta"));
     }
 
     public static ObjectMapper createObjectMapper() {

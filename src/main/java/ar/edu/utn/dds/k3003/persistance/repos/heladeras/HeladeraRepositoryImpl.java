@@ -130,7 +130,7 @@ public class HeladeraRepositoryImpl implements HeladeraRepository {
         try {
             LocalDateTime limite = LocalDateTime.now().minusMinutes(minutes);
 
-            return em.createQuery("SELECT h FROM Heladera h WHERE h.fechaDeFuncionamiento < :limite AND h.habilitacion = :habilitado", Heladera.class)
+            return em.createQuery("SELECT h FROM Heladera h WHERE h.horarioultimatemperatura < :limite AND h.habilitacion = :habilitado", Heladera.class)
                     .setParameter("limite", limite)
                     .setParameter("habilitado", HabilitacionEnum.HABILITADA)
                     .getResultList();
@@ -152,7 +152,7 @@ public class HeladeraRepositoryImpl implements HeladeraRepository {
             return em.createQuery(
                             "SELECT h FROM Heladera h " +
                                     "WHERE (h.ultimaTemperatura < h.minimoTemperatura OR h.ultimaTemperatura > h.maximoTemperatura) " +
-                                    "AND h.fechaUltimaTemperatura < :limite " +
+                                    "AND h.horarioultimatemperatura < :limite " +
                                     "AND h.habilitacion = :habilitado", Heladera.class)
                     .setParameter("limite", limite)
                     .setParameter("habilitado", HabilitacionEnum.HABILITADA)

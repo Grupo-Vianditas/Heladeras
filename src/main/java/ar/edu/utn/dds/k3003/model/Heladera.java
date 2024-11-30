@@ -59,6 +59,9 @@ public class Heladera {
     @Column(name = "maximoTemperatura")
     private Integer maximoTemperatura;
 
+    @Column(name = "horarioUltimaTemperatura", columnDefinition = "TIMESTAMP")
+    private LocalDateTime horarioUltimaTemperatura;
+
     @Column(name = "ultimaApertura", columnDefinition = "TIMESTAMP")
     private LocalDateTime ultimaApertura;
 
@@ -86,7 +89,7 @@ public class Heladera {
         this.maximoTemperatura = 15; // Hardcodeado
         this.fechaDeFuncionamiento = LocalDateTime.now();
         this.habilitacion = habilitacion;
-        this.ultimaApertura = null;
+        this.horarioUltimaTemperatura = null;
         this.ultimaOperacion = Operaciones.SIN_MOVIMIENTOS;
         this.temperaturas = new HashSet<>();
         this.incidentes = new HashSet<>();
