@@ -67,10 +67,6 @@ public class HeladeraService {
     public HabilitacionDTO deshabilitar(Integer heladeraId){
         Heladera heladera = findHeladeraById(heladeraId);
 
-        if(heladera.getCantidadDeViandas()>0){
-            throw new IllegalStateException("No se puede deshabilitar la heladera porque posee "+heladera.getCantidadDeViandas()+" viandas.");
-        }
-
         heladera.deshabilitar();
         updateHeladera(heladera);
         return new HabilitacionDTO(heladeraId, HabilitacionEnum.INHABILITADA);
