@@ -10,6 +10,7 @@ import ar.edu.utn.dds.k3003.presentation.auxiliar.DTOs.heladera.CreateHeladeraDT
 import ar.edu.utn.dds.k3003.presentation.auxiliar.DTOs.heladera.ReturningHeladeraDTO;
 
 
+import java.util.List;
 import java.util.NoSuchElementException;
 
 public class HeladeraService {
@@ -74,6 +75,14 @@ public class HeladeraService {
 
     public Integer getCantidadViandas(Integer heladeraId){
         return repo.getCantidadViandas(heladeraId);
+    }
+
+    public List<Heladera> getHeladerasDesconectadas(int minutes){
+        return repo.getHeladerasDesconectadas(minutes);
+    }
+
+    public List<Heladera> getHeladerasTemperaturas(int minutes){
+        return repo.getHeladerasTemperaturas(minutes);
     }
 
     public void clear(){

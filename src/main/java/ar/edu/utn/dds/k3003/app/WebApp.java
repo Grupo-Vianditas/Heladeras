@@ -12,6 +12,7 @@ import ar.edu.utn.dds.k3003.presentation.metrics.MetricsConfig;
 
 import ar.edu.utn.dds.k3003.presentation.metrics.controllersCounters.MetricsFactory;
 import ar.edu.utn.dds.k3003.presentation.metrics.queueCounters.QueueCounter;
+import ar.edu.utn.dds.k3003.service.CronService;
 import ar.edu.utn.dds.k3003.service.MetricsService;
 import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -134,6 +135,8 @@ public class WebApp {
             }
         }
 
+        CronService cron = new CronService();
+        cron.startJob(env.getOrDefault("ENDPOINT_ALERTAS", "https//localhost:8080/incidentes/notificarAlerta"));
     }
 
     public static ObjectMapper createObjectMapper() {

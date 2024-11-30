@@ -1,11 +1,14 @@
 package ar.edu.utn.dds.k3003.persistance.repos.heladeras;
 
 import ar.edu.utn.dds.k3003.model.Heladera;
+import ar.edu.utn.dds.k3003.model.heladera.HabilitacionEnum;
 import ar.edu.utn.dds.k3003.persistance.utils.PersistenceUtils;
 
 import javax.persistence.EntityManager;
 import javax.persistence.EntityManagerFactory;
 import javax.persistence.NoResultException;
+import java.time.LocalDateTime;
+import java.util.List;
 
 
 public class HeladeraRepositoryImpl implements HeladeraRepository {
@@ -115,6 +118,47 @@ public class HeladeraRepositoryImpl implements HeladeraRepository {
                     .getSingleResult();
         } catch (NoResultException e) {
             throw new NoResultException("No existe una heladera con ese id: " + heladeraId);
+        } finally {
+            if (em.isOpen()) {
+                em.close();
+            }
+        }
+    }
+
+    public List<Heladera> getHeladerasDesconectadas(int minutes) {
+        EntityManager em = emf.createEntityManager();
+        try {
+            LocalDateTime limite = LocalDateTime.now().minusMinutes(minutes);
+
+            return em.createQuery("SELECT h FROM Heladera h WHERE h.fechaDeFuncionamiento < :limite AND h.habilitacion = :habilitado", Heladera.class)
+                    .setParameter("limite", limite)
+                    .setParameter("habilitado", HabilitacionEnum.HABILITADA)
+                    .getResultList();
+        } catch (NoResultException e) {
+            throw new NoResultException("No se encontraron heladeras habilitadas y desconectadas en los últimos " + minutes + " minutos.");
+        } finally {
+            if (em.isOpen()) {
+                em.close();
+            }
+        }
+    }
+
+
+    public List<Heladera> getHeladerasTemperaturas(int minutes) {
+        EntityManager em = emf.createEntityManager();
+        try {
+            LocalDateTime limite = LocalDateTime.now().minusMinutes(minutes);
+
+            return em.createQuery(
+                            "SELECT h FROM Heladera h " +
+                                    "WHERE (h.ultimaTemperatura < h.minimoTemperatura OR h.ultimaTemperatura > h.maximoTemperatura) " +
+                                    "AND h.fechaUltimaTemperatura < :limite " +
+                                    "AND h.habilitacion = :habilitado", Heladera.class)
+                    .setParameter("limite", limite)
+                    .setParameter("habilitado", HabilitacionEnum.HABILITADA)
+                    .getResultList();
+        } catch (NoResultException e) {
+            throw new NoResultException("No se encontraron heladeras fuera del rango de temperatura en los últimos " + minutes + " minutos.");
         } finally {
             if (em.isOpen()) {
                 em.close();
