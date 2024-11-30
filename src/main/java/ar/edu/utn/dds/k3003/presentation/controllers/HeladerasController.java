@@ -2,6 +2,8 @@ package ar.edu.utn.dds.k3003.presentation.controllers;
 
 import ar.edu.utn.dds.k3003.app.Fachada;
 
+import ar.edu.utn.dds.k3003.model.incidente.TipoIncidenteEnum;
+import ar.edu.utn.dds.k3003.presentation.auxiliar.DTOs.IncidenteDTO;
 import ar.edu.utn.dds.k3003.presentation.auxiliar.DTOs.heladera.CreateHeladeraDTO;
 
 import ar.edu.utn.dds.k3003.presentation.controllers.baseController.BaseController;
@@ -21,10 +23,11 @@ public class HeladerasController extends BaseController {
         this.fachada = fachada;
     }
 
+    //Validado
     public void agregar(Context ctx) {
         handleRequest(ctx, "/heladeras", "POST", () -> {
             CreateHeladeraDTO heladeraDTO = parseBody(ctx, CreateHeladeraDTO.class);
-            validarDTO(heladeraDTO);
+            validarCreateHeladeraDTO(heladeraDTO);
             ctx.json(fachada.agregar(heladeraDTO));
             ctx.status(HttpStatus.CREATED);
         });
@@ -39,23 +42,35 @@ public class HeladerasController extends BaseController {
     }
 
     public void habilitar(Context ctx) {
-        handleRequest(ctx, "/heladeras/{heladeraId}/habilitar", "POST", () -> {
-            Integer heladeraId = ctx.pathParamAsClass("heladeraId", Integer.class).get();
-            ctx.json(fachada.habilitar(heladeraId));
-            ctx.status(HttpStatus.OK);
+        handleRequest(ctx, "/heladeras/habilitar", "POST", () -> {
+            IncidenteDTO reporte = parseBody(ctx, IncidenteDTO.class);
+            if(validarIncidenteDTO(reporte, TipoIncidenteEnum.REPARACION)) {
+                ctx.json(fachada.habilitar(reporte));
+                ctx.status(HttpStatus.OK);
+            } else {
+                throw new javax.validation.ValidationException("El cuerpo del mensaje es invalido.");
+            }
         });
     }
 
     public void deshabilitar(Context ctx) {
-        handleRequest(ctx, "/heladeras/{heladeraId}/deshabilitar", "POST", () -> {
-            Integer heladeraId = ctx.pathParamAsClass("heladeraId", Integer.class).get();
-            ctx.json(fachada.inhabilitar(heladeraId));
-            ctx.status(HttpStatus.OK);
+        handleRequest(ctx, "/heladeras/deshabilitar", "POST", () -> {
+            IncidenteDTO reporte = parseBody(ctx, IncidenteDTO.class);
+            if(validarIncidenteDTO(reporte, TipoIncidenteEnum.FALLA_TECNICA)) {
+                ctx.json(fachada.deshabilitar(reporte));
+                ctx.status(HttpStatus.OK);
+            }else {
+                throw new javax.validation.ValidationException("El cuerpo del mensaje es invalido.");
+            }
         });
     }
 
+    private static boolean validarIncidenteDTO(IncidenteDTO reporte, TipoIncidenteEnum tipoEsperado){
+        return reporte.getTipoIncidente() == tipoEsperado;
+    }
 
-    private static void validarDTO(CreateHeladeraDTO heladeraDTO) throws ValidationException {
+
+    private static void validarCreateHeladeraDTO(CreateHeladeraDTO heladeraDTO) throws ValidationException {
         if (heladeraDTO == null) {
             throw new ValidationException("El objeto HeladeraDTO no puede ser nulo.");
         }

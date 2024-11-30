@@ -6,6 +6,7 @@ import ar.edu.utn.dds.k3003.model.errors.OperacionInvalidaException;
 import ar.edu.utn.dds.k3003.model.estados.Operaciones;
 
 import ar.edu.utn.dds.k3003.model.heladera.HabilitacionEnum;
+import ar.edu.utn.dds.k3003.model.incidente.TipoIncidenteEnum;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.Setter;
@@ -60,7 +61,10 @@ public class Heladera {
     private Operaciones ultimaOperacion;
 
     @OneToMany(mappedBy = "heladera", cascade = {CascadeType.ALL}, fetch = FetchType.EAGER, orphanRemoval = true)
-    private List<Temperatura> temperaturas;
+    private Set<Temperatura> temperaturas;
+
+    @OneToMany(mappedBy = "heladera", cascade = {CascadeType.ALL}, fetch = FetchType.EAGER, orphanRemoval = true)
+    private Set<Incidente> incidentes;
 
     public Heladera() {}
 
@@ -76,7 +80,8 @@ public class Heladera {
         this.habilitacion = habilitacion;
         this.ultimaApertura = null;
         this.ultimaOperacion = Operaciones.SIN_MOVIMIENTOS;
-        this.temperaturas = new ArrayList<>();
+        this.temperaturas = new HashSet<>();
+        this.incidentes = new HashSet<>();
 
         if (cantidadDeViandas != null) {
             if (cantidadDeViandas > this.cantidadDeViandasMaxima) {
@@ -142,6 +147,11 @@ public class Heladera {
             this.temperaturas.add(temperatura);
             this.ultimaTemperaturaRegistrada = temperatura.getTemperatura();
         }
+    }
+
+    public void agregarIncidente(Incidente incidente){
+        incidente.setHeladera(this);
+        this.incidentes.add(incidente);
     }
 
     public void deshabilitar(){

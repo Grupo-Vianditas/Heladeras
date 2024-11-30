@@ -68,8 +68,8 @@ public class WebApp {
         app.get("/heladeras/{heladeraId}", heladerasController::buscarXId);
 
         // Entrega 5
-        app.post("/heladeras/{heladeraId}/habilitar", heladerasController::habilitar);
-        app.post("/heladeras/{heladeraId}/deshabilitar", heladerasController::deshabilitar);
+        app.post("/heladeras/habilitar", heladerasController::habilitar);
+        app.post("/heladeras/deshabilitar", heladerasController::deshabilitar);
 
         // ViandasController
         app.post("/depositos", viandasController::depositar);
@@ -86,9 +86,7 @@ public class WebApp {
         app.post("/clear", cleanerController::clear);
 
         // IncidentesController
-        app.post("/incidentes/{heladeraId}/temperatura/", incidentesController::alertarTemperatura);
-        app.post("/incidentes/{heladeraId}/fraude", incidentesController::alertarFraude);
-        app.post("/incidentes/{heladeraId}/conexion",incidentesController::alertarConexion );
+        app.post("/incidentes/notificarAlerta", incidentesController::notificarAlerta);
         app.post("/incidentes/{heladeraId}/falla",incidentesController::falloTecnico);
 
         // Controller metricas

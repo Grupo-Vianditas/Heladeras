@@ -4,10 +4,11 @@ import ar.edu.utn.dds.k3003.facades.FachadaViandas;
 import ar.edu.utn.dds.k3003.facades.dtos.*;
 
 import ar.edu.utn.dds.k3003.model.Heladera;
-import ar.edu.utn.dds.k3003.model.incidentes.subtipos.SubtipoAlerta;
+import ar.edu.utn.dds.k3003.model.Incidente;
 import ar.edu.utn.dds.k3003.presentation.auxiliar.DTOs.FallaHeladeraDTO;
 import ar.edu.utn.dds.k3003.presentation.auxiliar.DTOs.HabilitacionDTO;
 import ar.edu.utn.dds.k3003.presentation.auxiliar.DTOs.MovimientoDTO;
+import ar.edu.utn.dds.k3003.presentation.auxiliar.DTOs.IncidenteDTO;
 import ar.edu.utn.dds.k3003.presentation.auxiliar.DTOs.heladera.CreateHeladeraDTO;
 import ar.edu.utn.dds.k3003.presentation.auxiliar.DTOs.heladera.ReturningHeladeraDTO;
 import ar.edu.utn.dds.k3003.service.*;
@@ -54,26 +55,43 @@ public class Fachada implements ar.edu.utn.dds.k3003.facades.FachadaHeladeras{
     }
 
     // Nuevo metodo
-    public HabilitacionDTO habilitar(Integer heladeraId){
-        return heladeraService.habilitar(heladeraId);
+    public HabilitacionDTO habilitar(IncidenteDTO reporte){
+        HabilitacionDTO habilitacion = heladeraService.habilitar(reporte.getHeladeraId());
+
+        Incidente incidente = incidentesService.generarIncidente(reporte);
+        incidentesService.save(incidente);
+        impresionService.imprimirIncidente(incidente);
+
+        return habilitacion;
     }
 
-    public HabilitacionDTO inhabilitar(Integer heladeraId){
-        notificadorService.enviarFalla(new FallaHeladeraDTO(heladeraId, LocalDateTime.now()));
-        return heladeraService.deshabilitar(heladeraId);
+    public HabilitacionDTO deshabilitar(IncidenteDTO reporte){
+        HabilitacionDTO habilitacion = heladeraService.deshabilitar(reporte.getHeladeraId());
+
+        Incidente incidente = incidentesService.generarIncidente(reporte);
+        incidentesService.save(incidente);
+        impresionService.imprimirIncidente(incidente);
+
+        notificadorService.enviarFalla(new FallaHeladeraDTO(reporte.getHeladeraId(), LocalDateTime.now()));
+
+        return habilitacion;
     }
 
-    public HabilitacionDTO generarIncidenteAlerta(Integer heladeraId, SubtipoAlerta subtipoAlerta){
-        HabilitacionDTO nuevoEstado = heladeraService.deshabilitar(heladeraId);
-        impresionService.imprimirIncidente(incidentesService.generarIncidente("ALERTA", heladeraId, subtipoAlerta));
+    public HabilitacionDTO generarIncidenteAlerta(IncidenteDTO reporte){
+        HabilitacionDTO nuevoEstado = heladeraService.deshabilitar(reporte.getHeladeraId());
+        Incidente incidente = incidentesService.generarIncidente(reporte);
+        incidentesService.save(incidente);
+        impresionService.imprimirIncidente(incidente);
+
         return nuevoEstado;
     }
 
-    public HabilitacionDTO generarIncidenteTecnico(Integer heladeraId){
-        HabilitacionDTO nuevoEstado = heladeraService.deshabilitar(heladeraId);
-        impresionService.imprimirIncidente(incidentesService.generarIncidente("TECNICO", heladeraId, null));
-
-        notificadorService.enviarFalla(new FallaHeladeraDTO(heladeraId, LocalDateTime.now()));
+    public HabilitacionDTO generarIncidenteTecnico(IncidenteDTO reporteDTO){
+        HabilitacionDTO nuevoEstado = heladeraService.deshabilitar(reporteDTO.getHeladeraId());
+        Incidente incidente = incidentesService.generarIncidente(reporteDTO);
+        incidentesService.save(incidente);
+        impresionService.imprimirIncidente(incidente);
+        notificadorService.enviarFalla(new FallaHeladeraDTO(incidente.getHeladeraId(), incidente.getTimestamp()));
         return nuevoEstado;
     }
 

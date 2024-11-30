@@ -1,27 +1,28 @@
 package ar.edu.utn.dds.k3003.service;
 
-import ar.edu.utn.dds.k3003.model.incidentes.Incidente;
-import ar.edu.utn.dds.k3003.model.incidentes.productores.GeneradorIncidentesAlertas;
-import ar.edu.utn.dds.k3003.model.incidentes.productores.GeneradorIncidentesTecnicos;
-import ar.edu.utn.dds.k3003.model.incidentes.subtipos.SubtipoAlerta;
+import ar.edu.utn.dds.k3003.model.Incidente;
+import ar.edu.utn.dds.k3003.model.incidente.TipoIncidenteEnum;
+import ar.edu.utn.dds.k3003.persistance.mappers.IncidenteMapper;
+import ar.edu.utn.dds.k3003.persistance.repos.incidentes.IncidenteRepositoryImpl;
+import ar.edu.utn.dds.k3003.presentation.auxiliar.DTOs.IncidenteDTO;
+
 
 public class IncidentesService {
-    private final GeneradorIncidentesAlertas generadorIncidentesAlertas;
-    private final GeneradorIncidentesTecnicos generadorIncidentesTecnicos;
 
-    public IncidentesService() {
-        this.generadorIncidentesAlertas = new GeneradorIncidentesAlertas();
-        this.generadorIncidentesTecnicos = new GeneradorIncidentesTecnicos();
+    private final IncidenteRepositoryImpl repo;
+    private final IncidenteMapper mapper;
+
+    public IncidentesService(){
+        this.repo = new IncidenteRepositoryImpl();
+        this.mapper = new IncidenteMapper();
     }
 
-    public Incidente generarIncidente(String tipo, Integer heladeraId, SubtipoAlerta subtipoAlerta) {
-        if ("ALERTA".equals(tipo) && subtipoAlerta != null) {
-            return generadorIncidentesAlertas.crearIncidente(heladeraId, subtipoAlerta);
-        } else if ("TECNICO".equals(tipo)) {
-            return generadorIncidentesTecnicos.crearIncidente(heladeraId);
-        } else {
-            throw new IllegalArgumentException("Tipo de incidente no soportado o subtipo de alerta faltante.");
-        }
+    public Incidente generarIncidente(IncidenteDTO reporte){
+        return mapper.toEntity(reporte);
+    }
+
+    public void save(Incidente incidente){
+        repo.save(incidente);
     }
 
 }

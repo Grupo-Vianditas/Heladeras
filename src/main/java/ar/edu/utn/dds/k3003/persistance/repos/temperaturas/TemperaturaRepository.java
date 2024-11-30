@@ -6,4 +6,6 @@ public interface TemperaturaRepository {
 
     void save(Temperatura temperatura);
     void clear();
+
+
 }

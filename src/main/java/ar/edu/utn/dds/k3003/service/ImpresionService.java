@@ -1,10 +1,8 @@
 package ar.edu.utn.dds.k3003.service;
 
-import ar.edu.utn.dds.k3003.model.incidentes.Incidente;
-import ar.edu.utn.dds.k3003.model.incidentes.IncidenteBase;
-import ar.edu.utn.dds.k3003.model.incidentes.concretos.IncidenteAlerta;
-import ar.edu.utn.dds.k3003.model.incidentes.subtipos.SubtipoAlerta;
-import org.jetbrains.annotations.NotNull;
+
+import ar.edu.utn.dds.k3003.model.Incidente;
+import ar.edu.utn.dds.k3003.model.incidente.TipoIncidenteEnum;
 
 public class ImpresionService {
 
@@ -16,53 +14,61 @@ public class ImpresionService {
     private static final String ANSI_PURPLE = "\u001B[35m";
     private static final String ANSI_BOLD = "\u001B[1m";
 
+
     public void imprimirIncidente(Incidente incidente) {
-        if (incidente instanceof IncidenteAlerta incidenteAlerta) {
-            String tipoColor = getColorPorTipo(incidenteAlerta.getTipoIncidente());
-            String tipoIncidente = tipoColor + incidenteAlerta.getTipoIncidente() + ANSI_RESET;
-            String subtipoColor = getColorPorSubtipo(incidenteAlerta.getSubtipoAlerta());
-
-            String mensaje = ANSI_BOLD + "\n--- INCIDENTE DETECTADO ---" + ANSI_RESET + "\n" +
-                    ANSI_BLUE + "Fecha: " + ANSI_RESET + incidenteAlerta.getFechaIncidente() + "\n" +
-                    ANSI_GREEN + "Heladera ID: " + ANSI_RESET + incidenteAlerta.getHeladeraId() + "\n" +
-                    "Tipo: " + tipoIncidente + "\n" +
-                    "Subtipo: " + subtipoColor + incidenteAlerta.getSubtipoAlerta() + ANSI_RESET + "\n";
-
-            System.out.println(mensaje);
-        } else if (incidente instanceof IncidenteBase incidenteBase) {
-            String mensaje = getString(incidenteBase);
-
-            System.out.println(mensaje);
+        if (incidente.getTipoIncidente() == TipoIncidenteEnum.FALLA_TECNICA) {
+            imprimirFallaTecnica(incidente);
         } else {
-            System.out.println(ANSI_RED + "Incidente no soportado para impresión." + ANSI_RESET);
+            imprimirAlerta(incidente);
         }
     }
 
-    private @NotNull String getString(IncidenteBase incidenteBase) {
-        String tipoColor = getColorPorTipo(incidenteBase.getTipoIncidente());
-        String tipoIncidente = tipoColor + incidenteBase.getTipoIncidente() + ANSI_RESET;
+    private void imprimirAlerta(Incidente incidente) {
+        String tipoColor = getColorPorTipo(incidente.getTipoIncidente());
+        String subtipoColor = getColorPorSubtipo(incidente.getTipoIncidente());
 
         String mensaje = ANSI_BOLD + "\n--- INCIDENTE DETECTADO ---" + ANSI_RESET + "\n" +
-                ANSI_BLUE + "Fecha: " + ANSI_RESET + incidenteBase.getFechaIncidente() + "\n" +
-                ANSI_GREEN + "Heladera ID: " + ANSI_RESET + incidenteBase.getHeladeraId() + "\n" +
-                "Tipo: " + tipoIncidente + "\n";
-        return mensaje;
+                ANSI_BLUE + "Fecha: " + ANSI_RESET + incidente.getTimestamp() + "\n" +
+                ANSI_GREEN + "Heladera ID: " + ANSI_RESET + incidente.getHeladeraId() + "\n" +
+                "Tipo: " + tipoColor + incidente.getTipoIncidente() + ANSI_RESET + "\n" +
+                "Subtipo: " + subtipoColor + getSubtipo(incidente) + ANSI_RESET + "\n";
+
+        System.out.println(mensaje);
     }
 
-    private String getColorPorTipo(String tipoIncidente) {
+    private void imprimirFallaTecnica(Incidente incidente) {
+        String tipoColor = getColorPorTipo(incidente.getTipoIncidente());
+
+        String mensaje = ANSI_BOLD + "\n--- FALLA TÉCNICA REPORTADA ---" + ANSI_RESET + "\n" +
+                ANSI_BLUE + "Fecha: " + ANSI_RESET + incidente.getTimestamp() + "\n" +
+                ANSI_GREEN + "Heladera ID: " + ANSI_RESET + incidente.getHeladeraId() + "\n" +
+                "Tipo: " + tipoColor + incidente.getTipoIncidente() + ANSI_RESET + "\n";
+
+        System.out.println(mensaje);
+    }
+
+
+    private String getColorPorTipo(TipoIncidenteEnum tipoIncidente) {
         return switch (tipoIncidente) {
-            case "ALERTA" -> ANSI_YELLOW;
-            case "TECNICO" -> ANSI_RED;
-            default -> ANSI_BLUE;
+            case TEMPERATURA -> ANSI_RED;
+            case FRAUDE -> ANSI_PURPLE;
+            case CONEXION -> ANSI_YELLOW;
+            case FALLA_TECNICA -> ANSI_BLUE;
+            case REPARACION -> ANSI_GREEN;
         };
     }
 
-    private String getColorPorSubtipo(SubtipoAlerta subtipoAlerta) {
-        return switch (subtipoAlerta) {
-            case TEMPERATURA_FUERA_DE_RANGO -> ANSI_RED;
-            case FRAUDE_DE_MOVIMIENTO -> ANSI_PURPLE;
-            case FALLA_DE_CONEXION -> ANSI_YELLOW;
+    private String getColorPorSubtipo(TipoIncidenteEnum tipoIncidente) {
+        return switch (tipoIncidente) {
+            case TEMPERATURA -> ANSI_RED;
+            case FRAUDE -> ANSI_PURPLE;
+            case CONEXION -> ANSI_YELLOW;
             default -> ANSI_RESET;
         };
+    }
+
+
+    private String getSubtipo(Incidente incidente) {
+        return incidente.getTipoIncidente().name();
     }
 }

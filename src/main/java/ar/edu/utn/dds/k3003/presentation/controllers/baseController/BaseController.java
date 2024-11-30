@@ -1,5 +1,6 @@
 package ar.edu.utn.dds.k3003.presentation.controllers.baseController;
 
+import ar.edu.utn.dds.k3003.model.errors.OperacionInvalidaException;
 import ar.edu.utn.dds.k3003.service.MetricsService;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonMappingException;
@@ -53,8 +54,12 @@ public abstract class BaseController {
             handleError(ctx, HttpStatus.NOT_FOUND, 3, "No existe una heladera con ese ID.", endpoint, method);
         } catch (javax.persistence.PersistenceException e) {
             handleError(ctx, HttpStatus.BAD_REQUEST, 4, "Ya existe una heladera con ese nombre.", endpoint, method);
+        } catch (OperacionInvalidaException e) {
+            handleError(ctx, HttpStatus.BAD_REQUEST, 5, "Operacion invalida detectada : " + e.getMessage(), endpoint, method);
+        }catch(IllegalStateException e){
+            handleError(ctx, HttpStatus.BAD_REQUEST, 6, "Estado invalido de la heladera : " + e.getMessage(), endpoint, method);
         } catch (Exception e) {
-            handleError(ctx, HttpStatus.INTERNAL_SERVER_ERROR, 5, "Error inesperado: " + e.getMessage(), endpoint, method);
+            handleError(ctx, HttpStatus.INTERNAL_SERVER_ERROR, 7, "Error inesperado: " + e.getMessage(), endpoint, method);
         }
     }
 
