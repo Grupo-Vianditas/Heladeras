@@ -87,7 +87,7 @@ public class WebApp {
 
         // IncidentesController
         app.post("/incidentes/notificarAlerta", incidentesController::notificarAlerta);
-        app.post("/incidentes/{heladeraId}/falla",incidentesController::falloTecnico);
+        app.post("/incidentes/fallaTecnica",incidentesController::falloTecnico);
 
         // Controller metricas
         app.get("/metrics", ctx -> {
