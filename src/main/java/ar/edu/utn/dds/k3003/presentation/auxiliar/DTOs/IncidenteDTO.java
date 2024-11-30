@@ -12,7 +12,7 @@ import java.time.LocalDateTime;
 @AllArgsConstructor
 public class IncidenteDTO {
     private Integer heladeraId;
-    private Integer colaboradorId;
+    private Long colaboradorId;
     private String denunciante;
     private TipoIncidenteEnum tipoIncidente;
     private LocalDateTime timestamp;

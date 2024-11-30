@@ -1,8 +1,6 @@
 package ar.edu.utn.dds.k3003.persistance.mappers;
 
-import ar.edu.utn.dds.k3003.facades.dtos.TemperaturaDTO;
 import ar.edu.utn.dds.k3003.model.Incidente;
-import ar.edu.utn.dds.k3003.model.Temperatura;
 import ar.edu.utn.dds.k3003.presentation.auxiliar.DTOs.IncidenteDTO;
 
 import java.util.List;

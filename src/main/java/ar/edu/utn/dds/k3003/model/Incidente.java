@@ -33,7 +33,7 @@ public class Incidente {
     private LocalDateTime timestamp;
 
     @Column(name = "colaboradorId")
-    private Integer colaboradorId;
+    private Long colaboradorId;
 
     @Column(name = "denunciante")
     private String denunciante;
@@ -47,7 +47,7 @@ public class Incidente {
 
     public Incidente(){}
 
-    public Incidente(Integer heladeraId, Integer colaboradorId, String denunciante, TipoIncidenteEnum tipoIncidente){
+    public Incidente(Integer heladeraId, Long colaboradorId, String denunciante, TipoIncidenteEnum tipoIncidente){
         this.tipoIncidente = tipoIncidente;
         this.colaboradorId = colaboradorId;
         this.timestamp = LocalDateTime.now();
@@ -55,7 +55,7 @@ public class Incidente {
         this.heladeraId = heladeraId;
     }
 
-    public Incidente(Integer heladeraId, Integer colaboradorId, String denunciante, TipoIncidenteEnum tipoIncidente, LocalDateTime timestamp) {
+    public Incidente(Integer heladeraId, Long colaboradorId, String denunciante, TipoIncidenteEnum tipoIncidente, LocalDateTime timestamp) {
         this.tipoIncidente = tipoIncidente;
         this.colaboradorId = colaboradorId;
         this.timestamp = (timestamp != null) ? timestamp : LocalDateTime.now();
