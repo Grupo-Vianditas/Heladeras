@@ -61,7 +61,7 @@ public class IncidenteRepositoryImpl implements IncidenteRepository{
         try {
 
             return em.createQuery(
-                            "SELECT t FROM Incidente t WHERE t.heladera.id = :heladeraId ORDER BY t.fechaMedicion DESC", Incidente.class)
+                            "SELECT t FROM Incidente t WHERE t.heladera.id = :heladeraId ORDER BY t.timestamp DESC", Incidente.class)
                     .setParameter("heladeraId", heladeraId)
                     .getResultList();
         }catch(NoResultException e){
@@ -91,4 +91,5 @@ public class IncidenteRepositoryImpl implements IncidenteRepository{
             }
         }
     }
+
 }

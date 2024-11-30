@@ -1,7 +1,6 @@
 package ar.edu.utn.dds.k3003.presentation.controllers;
 
 import ar.edu.utn.dds.k3003.app.Fachada;
-import ar.edu.utn.dds.k3003.model.incidente.TipoIncidenteEnum;
 import ar.edu.utn.dds.k3003.presentation.auxiliar.DTOs.IncidenteDTO;
 import ar.edu.utn.dds.k3003.presentation.controllers.baseController.BaseController;
 import ar.edu.utn.dds.k3003.service.MetricsService;
@@ -36,6 +35,14 @@ public class IncidentesController extends BaseController {
             validarDTO(reporteDTO);
             ctx.json(fachada.generarIncidenteTecnico(reporteDTO));
             ctx.status(HttpStatus.CREATED);
+        });
+    }
+
+    public void getIncidentesByHeladeraId(Context ctx){
+        handleRequest(ctx, "/incidentes/{heladeraId}", "GET", () -> {
+            Integer heladeraId = ctx.pathParamAsClass("heladeraId", Integer.class).get();
+            ctx.json(fachada.obtenerIncidentes(heladeraId));
+            ctx.status(HttpStatus.OK);
         });
     }
 

@@ -132,6 +132,12 @@ public class Fachada implements ar.edu.utn.dds.k3003.facades.FachadaHeladeras{
         );
     }
 
+    public List<IncidenteDTO> obtenerIncidentes(Integer heladeraId){
+        return incidentesService.getIncidentesDTO(
+                incidentesService.getIncidenteByHeladeraId(heladeraId)
+        );
+    }
+
     public void purgarTodo(){
         incidentesService.clear();
         temperaturaService.clear();

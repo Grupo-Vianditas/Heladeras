@@ -5,6 +5,8 @@ import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.Setter;
 
+import java.time.LocalDateTime;
+
 @Getter
 @Setter
 @AllArgsConstructor
@@ -13,6 +15,7 @@ public class IncidenteDTO {
     private Integer colaboradorId;
     private String denunciante;
     private TipoIncidenteEnum tipoIncidente;
+    private LocalDateTime timestamp;
 
     public IncidenteDTO(){}
 }

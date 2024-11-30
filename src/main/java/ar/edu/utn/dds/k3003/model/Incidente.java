@@ -54,4 +54,12 @@ public class Incidente {
         this.denunciante = denunciante;
         this.heladeraId = heladeraId;
     }
+
+    public Incidente(Integer heladeraId, Integer colaboradorId, String denunciante, TipoIncidenteEnum tipoIncidente, LocalDateTime timestamp) {
+        this.tipoIncidente = tipoIncidente;
+        this.colaboradorId = colaboradorId;
+        this.timestamp = (timestamp != null) ? timestamp : LocalDateTime.now();
+        this.denunciante = denunciante;
+        this.heladeraId = heladeraId;
+    }
 }
