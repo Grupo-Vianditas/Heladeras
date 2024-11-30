@@ -7,6 +7,7 @@ import java.util.List;
 public interface IncidenteRepository {
 
     void save(Incidente incidente);
+    public void clear();
 
     public Incidente getById(Integer incidenteId);
 

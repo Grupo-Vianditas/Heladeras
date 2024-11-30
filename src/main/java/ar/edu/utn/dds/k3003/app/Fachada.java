@@ -133,6 +133,7 @@ public class Fachada implements ar.edu.utn.dds.k3003.facades.FachadaHeladeras{
     }
 
     public void purgarTodo(){
+        incidentesService.clear();
         temperaturaService.clear();
         heladeraService.clear();
     }

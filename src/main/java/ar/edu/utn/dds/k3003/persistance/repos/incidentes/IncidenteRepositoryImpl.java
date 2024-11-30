@@ -72,4 +72,23 @@ public class IncidenteRepositoryImpl implements IncidenteRepository{
             }
         }
     }
+
+    @Override
+    public void clear() {
+        EntityManager em = emf.createEntityManager();
+        try {
+            em.getTransaction().begin();
+            em.createQuery("DELETE FROM Incidente").executeUpdate();
+            em.getTransaction().commit();
+        } catch (RuntimeException e) {
+            if (em.getTransaction().isActive()) {
+                em.getTransaction().rollback();
+            }
+            throw e;
+        } finally {
+            if (em.isOpen()) {
+                em.close();
+            }
+        }
+    }
 }

@@ -25,4 +25,8 @@ public class IncidentesService {
         repo.save(incidente);
     }
 
+    public void clear(){
+        repo.clear();
+    }
+
 }
