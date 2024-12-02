@@ -130,9 +130,9 @@ public class HeladeraRepositoryImpl implements HeladeraRepository {
         try {
             LocalDateTime limite = LocalDateTime.now().minusMinutes(minutes);
 
-            return em.createQuery("SELECT h FROM Heladera h WHERE h.horarioultimatemperatura < :limite AND h.habilitacion = :habilitado", Heladera.class)
+            return em.createQuery("SELECT h FROM Heladera h WHERE h.horarioUltimaTemperatura < :limite AND h.habilitacion = :habilitada", Heladera.class)
                     .setParameter("limite", limite)
-                    .setParameter("habilitado", HabilitacionEnum.HABILITADA)
+                    .setParameter("habilitada", HabilitacionEnum.HABILITADA)
                     .getResultList();
         } catch (NoResultException e) {
             throw new NoResultException("No se encontraron heladeras habilitadas y desconectadas en los últimos " + minutes + " minutos.");
@@ -151,11 +151,11 @@ public class HeladeraRepositoryImpl implements HeladeraRepository {
 
             return em.createQuery(
                             "SELECT h FROM Heladera h " +
-                                    "WHERE (h.ultimaTemperatura < h.minimoTemperatura OR h.ultimaTemperatura > h.maximoTemperatura) " +
-                                    "AND h.horarioultimatemperatura < :limite " +
-                                    "AND h.habilitacion = :habilitado", Heladera.class)
+                                    "WHERE (h.ultimaTemperaturaRegistrada < h.minimoTemperatura OR h.ultimaTemperaturaRegistrada > h.maximoTemperatura) " +
+                                    "AND h.horarioUltimaTemperatura < :limite " +
+                                    "AND h.habilitacion = :habilitada", Heladera.class)
                     .setParameter("limite", limite)
-                    .setParameter("habilitado", HabilitacionEnum.HABILITADA)
+                    .setParameter("habilitada", HabilitacionEnum.HABILITADA)
                     .getResultList();
         } catch (NoResultException e) {
             throw new NoResultException("No se encontraron heladeras fuera del rango de temperatura en los últimos " + minutes + " minutos.");

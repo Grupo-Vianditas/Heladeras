@@ -4,8 +4,10 @@ import ar.edu.utn.dds.k3003.model.Heladera;
 import ar.edu.utn.dds.k3003.model.incidente.TipoIncidenteEnum;
 import ar.edu.utn.dds.k3003.presentation.auxiliar.DTOs.IncidenteDTO;
 
+import java.io.InputStream;
 import java.net.HttpURLConnection;
 import java.net.URL;
+import java.nio.charset.StandardCharsets;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.concurrent.Executors;
@@ -13,6 +15,7 @@ import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 
 import java.io.OutputStream;
 
@@ -20,64 +23,67 @@ import java.io.OutputStream;
 public class CronService {
 
     private final HeladeraService heladeraService;
-    private static final int INTERVAL_MINUTES = 1;
+    private static final int INTERVAL_MINUTES = 2;
     private final ScheduledExecutorService scheduler = Executors.newScheduledThreadPool(1);
-    private final ObjectMapper objectMapper = new ObjectMapper();
+    private final ObjectMapper objectMapper;
 
-    public CronService() {
-        this.heladeraService = new HeladeraService(); // Rompe un poquito DIP pero bueno
+    public CronService(HeladeraService heladeraService) {
+        this.heladeraService = heladeraService;
+        this.objectMapper = new ObjectMapper();
+        objectMapper.registerModule(new JavaTimeModule());
     }
 
     public void startJob(String endpointURL) {
         Runnable task = () -> {
+            System.out.println("########## HOLA SOY UN CRON Y VENGO A TRABAJAR ##########");
             try {
                 System.out.println("Consultando heladeras con fallas de conexión...");
                 List<Heladera> heladerasDesconectadas = heladeraService.getHeladerasDesconectadas(INTERVAL_MINUTES);
 
-                List<IncidenteDTO> incidentesDTODesconexion = heladerasDesconectadas.stream()
-                        .map(heladera -> {
-                            IncidenteDTO dto = new IncidenteDTO();
-                            dto.setHeladeraId(heladera.getHeladeraId());
-                            dto.setColaboradorId(0L);
-                            dto.setDenunciante("CronJob");
-                            dto.setTipoIncidente(TipoIncidenteEnum.CONEXION);
-                            dto.setTimestamp(LocalDateTime.now());
-                            return dto;
-                        })
-                        .toList();
+                if(heladerasDesconectadas.isEmpty()){
+                    System.out.println(" > Que buena suerte ! No hay heladeras desconectadas a : "+LocalDateTime.now());
+                }
+
+                heladerasDesconectadas.forEach(heladera -> {
+                    IncidenteDTO dto = new IncidenteDTO();
+                    dto.setHeladeraId(heladera.getHeladeraId());
+                    dto.setColaboradorId(0L);
+                    dto.setDenunciante("CronJob");
+                    dto.setTipoIncidente(TipoIncidenteEnum.CONEXION);
+                    dto.setTimestamp(LocalDateTime.now());
+                    enviarIncidente(endpointURL, dto);
+                });
 
                 System.out.println("Consultando heladeras con problemas en temperatura...");
                 List<Heladera> heladerasConProblemasDeTemperatura = heladeraService.getHeladerasTemperaturas(INTERVAL_MINUTES);
 
-                List<IncidenteDTO> incidentesDTOTemperatura = heladerasConProblemasDeTemperatura.stream()
-                        .map(heladera -> {
-                            IncidenteDTO dto = new IncidenteDTO();
-                            dto.setHeladeraId(heladera.getHeladeraId());
-                            dto.setColaboradorId(0L);
-                            dto.setDenunciante("CronJob");
-                            dto.setTipoIncidente(TipoIncidenteEnum.TEMPERATURA);
-                            dto.setTimestamp(LocalDateTime.now());
-                            return dto;
-                        })
-                        .toList();
+                if(heladerasConProblemasDeTemperatura.isEmpty()){
+                    System.out.println(" > Que buena suerte ! No hay heladeras con problemas de temperatura a : "+LocalDateTime.now());
+                }
 
-                List<IncidenteDTO> todosLosIncidentes = new java.util.ArrayList<>();
-                todosLosIncidentes.addAll(incidentesDTODesconexion);
-                todosLosIncidentes.addAll(incidentesDTOTemperatura);
-
-                enviarIncidentes(endpointURL, todosLosIncidentes);
+                heladerasConProblemasDeTemperatura.forEach(heladera -> {
+                    IncidenteDTO dto = new IncidenteDTO();
+                    dto.setHeladeraId(heladera.getHeladeraId());
+                    dto.setColaboradorId(0L);
+                    dto.setDenunciante("CronJob");
+                    dto.setTipoIncidente(TipoIncidenteEnum.TEMPERATURA);
+                    dto.setTimestamp(LocalDateTime.now());
+                    enviarIncidente(endpointURL, dto);
+                });
 
             } catch (Exception e) {
                 System.err.println("Error durante la ejecución del job: " + e.getMessage());
             }
-        };
 
-        scheduler.scheduleAtFixedRate(task, 0, INTERVAL_MINUTES, TimeUnit.MINUTES);
+            System.out.println("########## YA TERMINE CAPO, NOS VIMOS ##########");
+
+        };
+        scheduler.scheduleWithFixedDelay(task, 0, INTERVAL_MINUTES, TimeUnit.MINUTES);
     }
 
-    private void enviarIncidentes(String endpointURL, List<IncidenteDTO> incidentesDTO) {
+    private void enviarIncidente(String endpointURL, IncidenteDTO incidenteDTO) {
         try {
-            String jsonPayload = objectMapper.writeValueAsString(incidentesDTO);
+            String jsonPayload = objectMapper.writeValueAsString(incidenteDTO);
 
             URL url = new URL(endpointURL);
             HttpURLConnection connection = (HttpURLConnection) url.openConnection();
@@ -92,15 +98,22 @@ public class CronService {
             }
 
             int responseCode = connection.getResponseCode();
+
             if (responseCode == HttpURLConnection.HTTP_OK) {
-                System.out.println("Incidentes enviados exitosamente al endpoint.");
+                System.out.println("Incidente enviado exitosamente: " + "Tipo de incidente : " + incidenteDTO.getTipoIncidente() + " HeladeraId : " + incidenteDTO.getHeladeraId() + " Timestamp : " + incidenteDTO.getTimestamp());
             } else {
-                System.err.println("Error al enviar incidentes al endpoint. Código de respuesta: " + responseCode);
+                System.err.println("Error al enviar incidente. Código de respuesta: " + responseCode);
+                try (InputStream is = connection.getErrorStream()) {
+                    if (is != null) {
+                        String responseMessage = new String(is.readAllBytes(), StandardCharsets.UTF_8);
+                        System.err.println("Mensaje de error del servidor: " + responseMessage);
+                    }
+                }
             }
 
             connection.disconnect();
         } catch (Exception e) {
-            System.err.println("Error al enviar incidentes: " + e.getMessage());
+            System.err.println("Error al enviar incidente: " + e.getMessage());
             e.printStackTrace();
         }
     }

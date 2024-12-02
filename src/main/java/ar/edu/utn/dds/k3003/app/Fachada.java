@@ -22,20 +22,20 @@ import java.util.NoSuchElementException;
 @Getter
 public class Fachada implements ar.edu.utn.dds.k3003.facades.FachadaHeladeras{
 
+    private FachadaViandas fachadaViandas;
+
     private final HeladeraService heladeraService;
     private final TemperaturaService temperaturaService;
     private final IncidentesService incidentesService;
     private final ImpresionService impresionService;
     private final NotificadorService notificadorService;
 
-    private FachadaViandas fachadaViandas;
-
-    public Fachada(){
-        this.heladeraService = new HeladeraService();
-        this.temperaturaService = new TemperaturaService();
-        this.incidentesService = new IncidentesService();
-        this.impresionService = new ImpresionService();
-        this.notificadorService = new NotificadorService();
+    public Fachada(HeladeraService heladeraService, TemperaturaService temperaturaService, IncidentesService incidentesService, ImpresionService impresionService, NotificadorService notificadorService){
+        this.heladeraService = heladeraService;
+        this.temperaturaService = temperaturaService;
+        this.incidentesService = incidentesService;
+        this.impresionService = impresionService;
+        this.notificadorService = notificadorService;
     }
 
     //Deprecado porque ahora devuelve un NewHeladeraDTO

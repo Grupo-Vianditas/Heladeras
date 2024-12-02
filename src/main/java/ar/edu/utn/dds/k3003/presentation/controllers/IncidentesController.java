@@ -53,7 +53,7 @@ public class IncidentesController extends BaseController {
         if (reporteDTO.getHeladeraId() == null || reporteDTO.getHeladeraId() == 0) {
             throw new ValidationException("Debe enviar un Id para reportar a la heladera.");
         }
-        if (reporteDTO.getColaboradorId() == null || reporteDTO.getColaboradorId() == 0) {
+        if (reporteDTO.getColaboradorId() == null) {
             throw new ValidationException("Debe enviar un Id para reportar al responsable.");
         }
         if (reporteDTO.getDenunciante() == null || reporteDTO.getDenunciante().isBlank()) {

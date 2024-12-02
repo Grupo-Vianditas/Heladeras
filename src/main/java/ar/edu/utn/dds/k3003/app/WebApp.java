@@ -12,8 +12,7 @@ import ar.edu.utn.dds.k3003.presentation.metrics.MetricsConfig;
 
 import ar.edu.utn.dds.k3003.presentation.metrics.controllersCounters.MetricsFactory;
 import ar.edu.utn.dds.k3003.presentation.metrics.queueCounters.QueueCounter;
-import ar.edu.utn.dds.k3003.service.CronService;
-import ar.edu.utn.dds.k3003.service.MetricsService;
+import ar.edu.utn.dds.k3003.service.*;
 import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
@@ -37,7 +36,14 @@ public class WebApp {
     public static void main(String[] args) {
 
         var env = System.getenv();
-        Fachada fachada = new Fachada();
+
+        HeladeraService heladeraService = new HeladeraService();
+        TemperaturaService temperaturaService = new TemperaturaService();
+        IncidentesService incidentesService = new IncidentesService();
+        ImpresionService impresionService = new ImpresionService();
+        NotificadorService notificadorService = new NotificadorService();
+
+        Fachada fachada = new Fachada(heladeraService, temperaturaService, incidentesService, impresionService, notificadorService);
 
         // Iniciazar las metricas
         MetricsConfig metricsConfig = new MetricsConfig();
@@ -120,6 +126,9 @@ public class WebApp {
                 errorHandler
         );
 
+        CronService cron = new CronService(heladeraService);
+        cron.startJob(env.getOrDefault("ENDPOINT_ALERTAS", "http://localhost:8080/incidentes/notificarAlerta"));
+
         try {
             consumer.iniciarConexion();
             consumer.consumirMensajes();
@@ -134,9 +143,6 @@ public class WebApp {
                 System.err.println("Error cerrando conexión: " + e.getMessage());
             }
         }
-
-        CronService cron = new CronService();
-        cron.startJob(env.getOrDefault("ENDPOINT_ALERTAS", "https//localhost:8080/incidentes/notificarAlerta"));
     }
 
     public static ObjectMapper createObjectMapper() {
