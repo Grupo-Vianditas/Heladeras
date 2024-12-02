@@ -100,7 +100,7 @@ public class CronService {
             int responseCode = connection.getResponseCode();
 
             if (responseCode == HttpURLConnection.HTTP_OK) {
-                System.out.println("Incidente enviado exitosamente: " + "Tipo de incidente : " + incidenteDTO.getTipoIncidente() + " HeladeraId : " + incidenteDTO.getHeladeraId() + " Timestamp : " + incidenteDTO.getTimestamp());
+                System.out.println("Incidente enviado exitosamente: " + "Tipo de incidente : " + incidenteDTO.getTipoIncidente() + " | HeladeraId : " + incidenteDTO.getHeladeraId() + " | Timestamp : " + incidenteDTO.getTimestamp());
             } else {
                 System.err.println("Error al enviar incidente. Código de respuesta: " + responseCode);
                 try (InputStream is = connection.getErrorStream()) {
