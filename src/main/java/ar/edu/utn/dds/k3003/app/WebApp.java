@@ -18,6 +18,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import io.javalin.Javalin;
+import io.javalin.http.HttpStatus;
 import io.javalin.json.JavalinJackson;
 import io.javalin.micrometer.MicrometerPlugin;
 
@@ -112,6 +113,8 @@ public class WebApp {
         );
 
         app.get("/", ctx -> ctx.result("Hola, soy una API y no un easter egg."));
+        app.get("/status", ctx -> ctx.status(HttpStatus.OK));
+
 
         // Seteo el cliente del Rabbit
         MessageHandler messageHandler = new TemperaturaMessageHandler(fachada, new QueueCounter(metricsConfig));
