@@ -23,7 +23,7 @@ import java.io.OutputStream;
 public class CronService {
 
     private final HeladeraService heladeraService;
-    private static final int INTERVAL_MINUTES = 2;
+    private static final int INTERVAL_MINUTES = 15;
     private final ScheduledExecutorService scheduler = Executors.newScheduledThreadPool(1);
     private final ObjectMapper objectMapper;
 
