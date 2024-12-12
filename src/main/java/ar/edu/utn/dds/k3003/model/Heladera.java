@@ -132,12 +132,8 @@ public class Heladera {
     }
 
     public void retirarVianda() throws OperacionInvalidaException {
-        if (!estaHabilitada()){
-            throw new OperacionInvalidaException(
-                    ErrorTipo.HELADERA_INACTIVA,
-                    "La heladera se encuentra inactiva."
-            );
-        } else if (this.getCantidadDeViandas() < 0) {
+
+        if (this.getCantidadDeViandas() < 0) {
             throw new OperacionInvalidaException(ErrorTipo.CANTIDAD_FALTANTE, "No se pueden retirar mas viandas de esta heladera.");
 
         } else {
