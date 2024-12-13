@@ -5,6 +5,7 @@ import ar.edu.utn.dds.k3003.facades.dtos.*;
 
 import ar.edu.utn.dds.k3003.model.Heladera;
 import ar.edu.utn.dds.k3003.model.Incidente;
+import ar.edu.utn.dds.k3003.model.Retiro;
 import ar.edu.utn.dds.k3003.presentation.auxiliar.DTOs.FallaHeladeraDTO;
 import ar.edu.utn.dds.k3003.presentation.auxiliar.DTOs.HabilitacionDTO;
 import ar.edu.utn.dds.k3003.presentation.auxiliar.DTOs.MovimientoDTO;
@@ -29,13 +30,15 @@ public class Fachada implements ar.edu.utn.dds.k3003.facades.FachadaHeladeras{
     private final IncidentesService incidentesService;
     private final ImpresionService impresionService;
     private final NotificadorService notificadorService;
+    private final RetirosService retirosService;
 
-    public Fachada(HeladeraService heladeraService, TemperaturaService temperaturaService, IncidentesService incidentesService, ImpresionService impresionService, NotificadorService notificadorService){
+    public Fachada(HeladeraService heladeraService, TemperaturaService temperaturaService, IncidentesService incidentesService, ImpresionService impresionService, NotificadorService notificadorService, RetirosService retirosService){
         this.heladeraService = heladeraService;
         this.temperaturaService = temperaturaService;
         this.incidentesService = incidentesService;
         this.impresionService = impresionService;
         this.notificadorService = notificadorService;
+        this.retirosService = retirosService;
     }
 
     //Deprecado porque ahora devuelve un NewHeladeraDTO
@@ -116,6 +119,8 @@ public class Fachada implements ar.edu.utn.dds.k3003.facades.FachadaHeladeras{
         heladeraService.withdrawVianda(retiroDTO.getHeladeraId());
         fachadaViandas.modificarEstado(vianda.getCodigoQR(), EstadoViandaEnum.RETIRADA);
 
+        retirosService.save(new Retiro(retiroDTO.getHeladeraId(), retiroDTO.getQrVianda(), retiroDTO.getFechaRetiro()));
+
         Heladera heladera = this.heladeraService.findHeladeraById(retiroDTO.getHeladeraId());
         notificadorService.enviarMovimiento(new MovimientoDTO(retiroDTO.getHeladeraId(), heladera.getCantidadDeViandas(), heladera.getCantidadDeViandasMaxima()));
     }
@@ -142,10 +147,15 @@ public class Fachada implements ar.edu.utn.dds.k3003.facades.FachadaHeladeras{
         incidentesService.clear();
         temperaturaService.clear();
         heladeraService.clear();
+        retirosService.clear();
     }
 
     @Override
     public void setViandasProxy(FachadaViandas viandas){
         this.fachadaViandas = viandas;
+    }
+
+    public Integer retirosDelDia(Integer heladeraId) {
+        return retirosService.getDailyRetirosByHeladeraId(heladeraId);
     }
 }

@@ -43,8 +43,9 @@ public class WebApp {
         IncidentesService incidentesService = new IncidentesService();
         ImpresionService impresionService = new ImpresionService();
         NotificadorService notificadorService = new NotificadorService();
+        RetirosService retirosService = new RetirosService();
 
-        Fachada fachada = new Fachada(heladeraService, temperaturaService, incidentesService, impresionService, notificadorService);
+        Fachada fachada = new Fachada(heladeraService, temperaturaService, incidentesService, impresionService, notificadorService, retirosService);
 
         // Iniciazar las metricas
         MetricsConfig metricsConfig = new MetricsConfig();
@@ -82,6 +83,7 @@ public class WebApp {
         // ViandasController
         app.post("/depositos", viandasController::depositar);
         app.post("/retiros", viandasController::retirar);
+        app.get("/retiros/{heladeraId}", viandasController::retiros);
 
         // TemperaturasController
         app.post("/temperaturas", temperaturasController::registrarTemperatura);

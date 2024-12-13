@@ -22,7 +22,7 @@ public class ViandasController extends BaseController {
     }
 
     public void depositar(Context ctx) {
-        handleRequest(ctx, "/depositar", "POST", () -> {
+        handleRequest(ctx, "/depositos", "POST", () -> {
             ViandaDTO viandaDTO = parseBody(ctx, ViandaDTO.class);
             fachada.depositar(viandaDTO.getHeladeraId(), viandaDTO.getCodigoQR());
             ctx.json(Map.of("Status", "Done"));
@@ -31,10 +31,18 @@ public class ViandasController extends BaseController {
     }
 
     public void retirar(Context ctx) {
-        handleRequest(ctx, "/retirar", "POST", () -> {
+        handleRequest(ctx, "/retiros", "POST", () -> {
             RetiroDTO retiroDTO = parseBody(ctx, RetiroDTO.class);
             fachada.retirar(retiroDTO);
             ctx.json(Map.of("Status", "Done"));
+            ctx.status(HttpStatus.OK);
+        });
+    }
+
+    public void retiros(Context ctx){
+        handleRequest(ctx, "/retiros/{heladeraId}", "GET", () -> {
+            Integer heladeraId = ctx.pathParamAsClass("heladeraId", Integer.class).get();
+            ctx.json(fachada.retirosDelDia(heladeraId));
             ctx.status(HttpStatus.OK);
         });
     }
