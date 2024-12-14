@@ -155,7 +155,7 @@ public class Fachada implements ar.edu.utn.dds.k3003.facades.FachadaHeladeras{
         this.fachadaViandas = viandas;
     }
 
-    public Integer retirosDelDia(Integer heladeraId) {
+    public List<Retiro> retirosDelDia(Integer heladeraId) {
         return retirosService.getDailyRetirosByHeladeraId(heladeraId);
     }
 }

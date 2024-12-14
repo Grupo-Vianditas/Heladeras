@@ -9,6 +9,7 @@ import javax.persistence.Query;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
+import java.util.List;
 
 public class RetirosRepositoryImpl {
 
@@ -30,7 +31,7 @@ public class RetirosRepositoryImpl {
         }
     }
 
-    public Integer getDailyRetirosByHeladeraId(Integer heladeraId) {
+    public List<Retiro> getDailyRetirosByHeladeraId(Integer heladeraId) {
         EntityManager em = emf.createEntityManager();
         try {
             em.getTransaction().begin();
@@ -39,19 +40,20 @@ public class RetirosRepositoryImpl {
             LocalDateTime endOfDay = LocalDate.now().atTime(LocalTime.MAX);
 
             Query query = em.createQuery(
-                    "SELECT COUNT(r) " +
+                    "SELECT r " +
                             "FROM Retiro r " +
                             "WHERE r.heladeraId = :heladeraId " +
-                            "AND r.fecha BETWEEN :startOfDay AND :endOfDay"
+                            "AND r.fecha BETWEEN :startOfDay AND :endOfDay",
+                    Retiro.class
             );
             query.setParameter("heladeraId", heladeraId);
             query.setParameter("startOfDay", startOfDay);
             query.setParameter("endOfDay", endOfDay);
 
-            Long count = (Long) query.getSingleResult();
+            List<Retiro> retiros = query.getResultList();
 
             em.getTransaction().commit();
-            return count.intValue();
+            return retiros;
 
         } catch (RuntimeException e) {
             if (em.getTransaction().isActive()) {

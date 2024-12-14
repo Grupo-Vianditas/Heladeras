@@ -4,6 +4,8 @@ package ar.edu.utn.dds.k3003.service;
 import ar.edu.utn.dds.k3003.model.Retiro;
 import ar.edu.utn.dds.k3003.persistance.repos.retiros.RetirosRepositoryImpl;
 
+import java.util.List;
+
 public class RetirosService {
 
     private final RetirosRepositoryImpl repo;
@@ -16,7 +18,7 @@ public class RetirosService {
         repo.save(retiro);
     }
 
-    public Integer getDailyRetirosByHeladeraId(Integer heladeraId){
+    public List<Retiro> getDailyRetirosByHeladeraId(Integer heladeraId){
         return repo.getDailyRetirosByHeladeraId(heladeraId);
     }
 
