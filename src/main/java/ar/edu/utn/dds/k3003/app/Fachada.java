@@ -56,19 +56,22 @@ public class Fachada implements ar.edu.utn.dds.k3003.facades.FachadaHeladeras{
 
     // Nuevo metodo
     public HabilitacionDTO habilitar(IncidenteDTO reporte){
-        ReparacionHeladeraHeladeraDTO reparacion = new ReparacionHeladeraHeladeraDTO(Long.parseLong(reporte.getHeladeraId().toString()) , reporte.getColaboradorId(), LocalDateTime.now());
+        try {
+            ReparacionHeladeraHeladeraDTO reparacion = new ReparacionHeladeraHeladeraDTO(Long.parseLong(reporte.getHeladeraId().toString()), reporte.getColaboradorId(), LocalDateTime.now());
 
-        notificadorService.enviarReparacion(reparacion);
+            notificadorService.enviarReparacion(reparacion);
 
-        HabilitacionDTO habilitacion = heladeraService.habilitar(reporte.getHeladeraId());
+            HabilitacionDTO habilitacion = heladeraService.habilitar(reporte.getHeladeraId());
 
-        Incidente incidente = incidentesService.generarIncidente(reporte);
-        incidentesService.save(incidente);
-        impresionService.imprimirIncidente(incidente);
+            Incidente incidente = incidentesService.generarIncidente(reporte);
+            incidentesService.save(incidente);
+            impresionService.imprimirIncidente(incidente);
 
 
-
-        return habilitacion;
+            return habilitacion;
+        } catch (Exception e){
+            throw new RuntimeException("Error al reparar la heladera");
+        }
     }
 
     public HabilitacionDTO deshabilitar(IncidenteDTO reporte){
