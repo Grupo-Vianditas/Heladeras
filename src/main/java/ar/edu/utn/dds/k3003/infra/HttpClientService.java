@@ -36,7 +36,11 @@ public class HttpClientService {
     }
 
     public String enviarReparacionHeladera(ReparacionHeladeraHeladeraDTO reparacionHeladera) throws Exception{
-        return enviarPostRequest(urlReparacion, reparacionHeladera);
+        try {
+            return enviarPostRequest(urlReparacion, reparacionHeladera);
+        } catch (Exception e){
+            throw new RuntimeException(e);
+        }
     }
 
     private <T> String enviarPostRequest(String url, T dto) throws Exception {
