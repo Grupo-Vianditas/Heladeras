@@ -2,6 +2,7 @@ package ar.edu.utn.dds.k3003.infra;
 
 import ar.edu.utn.dds.k3003.presentation.auxiliar.DTOs.FallaHeladeraDTO;
 import ar.edu.utn.dds.k3003.presentation.auxiliar.DTOs.MovimientoDTO;
+import ar.edu.utn.dds.k3003.presentation.auxiliar.DTOs.ReparacionHeladeraHeladeraDTO;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 
@@ -16,12 +17,14 @@ public class HttpClientService {
     private final ObjectMapper objectMapper;
     private final String urlMovimiento;
     private final String urlFallaHeladera;
+    private final String urlReparacion;
 
     public HttpClientService() {
         this.httpClient = HttpClient.newHttpClient();
         this.objectMapper = new ObjectMapper().registerModule(new JavaTimeModule());
         this.urlMovimiento = "https://two024-tp-entrega-2-emilianosalvano.onrender.com/eventos/movimientoDeViandaEnHeladera";
         this.urlFallaHeladera = "https://two024-tp-entrega-2-emilianosalvano.onrender.com/eventos/fallaHeladera";
+        this.urlReparacion = "https://two024-tp-entrega-2-emilianosalvano.onrender.com/colaboradores/reparacionDeHeladera";
     }
 
     public String enviarMovimiento(MovimientoDTO movimiento) throws Exception {
@@ -30,6 +33,10 @@ public class HttpClientService {
 
     public String enviarFallaHeladera(FallaHeladeraDTO falla) throws Exception {
         return enviarPostRequest(urlFallaHeladera, falla);
+    }
+
+    public String enviarReparacionHeladera(ReparacionHeladeraHeladeraDTO reparacionHeladera) throws Exception{
+        return enviarPostRequest(urlReparacion, reparacionHeladera);
     }
 
     private <T> String enviarPostRequest(String url, T dto) throws Exception {

@@ -6,10 +6,7 @@ import ar.edu.utn.dds.k3003.facades.dtos.*;
 import ar.edu.utn.dds.k3003.model.Heladera;
 import ar.edu.utn.dds.k3003.model.Incidente;
 import ar.edu.utn.dds.k3003.model.Retiro;
-import ar.edu.utn.dds.k3003.presentation.auxiliar.DTOs.FallaHeladeraDTO;
-import ar.edu.utn.dds.k3003.presentation.auxiliar.DTOs.HabilitacionDTO;
-import ar.edu.utn.dds.k3003.presentation.auxiliar.DTOs.MovimientoDTO;
-import ar.edu.utn.dds.k3003.presentation.auxiliar.DTOs.IncidenteDTO;
+import ar.edu.utn.dds.k3003.presentation.auxiliar.DTOs.*;
 import ar.edu.utn.dds.k3003.presentation.auxiliar.DTOs.heladera.CreateHeladeraDTO;
 import ar.edu.utn.dds.k3003.presentation.auxiliar.DTOs.heladera.ReturningHeladeraDTO;
 import ar.edu.utn.dds.k3003.service.*;
@@ -59,11 +56,17 @@ public class Fachada implements ar.edu.utn.dds.k3003.facades.FachadaHeladeras{
 
     // Nuevo metodo
     public HabilitacionDTO habilitar(IncidenteDTO reporte){
+        ReparacionHeladeraHeladeraDTO reparacion = new ReparacionHeladeraHeladeraDTO(Long.parseLong(reporte.getHeladeraId().toString()) , reporte.getColaboradorId(), LocalDateTime.now());
+
+        notificadorService.enviarReparacion(reparacion);
+
         HabilitacionDTO habilitacion = heladeraService.habilitar(reporte.getHeladeraId());
 
         Incidente incidente = incidentesService.generarIncidente(reporte);
         incidentesService.save(incidente);
         impresionService.imprimirIncidente(incidente);
+
+
 
         return habilitacion;
     }
