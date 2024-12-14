@@ -119,7 +119,9 @@ public class Fachada implements ar.edu.utn.dds.k3003.facades.FachadaHeladeras{
         heladeraService.withdrawVianda(retiroDTO.getHeladeraId());
         fachadaViandas.modificarEstado(vianda.getCodigoQR(), EstadoViandaEnum.RETIRADA);
 
-        retirosService.save(new Retiro(retiroDTO.getHeladeraId(), retiroDTO.getQrVianda(), retiroDTO.getFechaRetiro()));
+        Retiro nuevoRetiro = new Retiro(retiroDTO.getId(), retiroDTO.getQrVianda(), retiroDTO.getTarjeta(), retiroDTO.getFechaRetiro(), retiroDTO.getHeladeraId());
+
+        retirosService.save(nuevoRetiro);
 
         Heladera heladera = this.heladeraService.findHeladeraById(retiroDTO.getHeladeraId());
         notificadorService.enviarMovimiento(new MovimientoDTO(retiroDTO.getHeladeraId(), heladera.getCantidadDeViandas(), heladera.getCantidadDeViandasMaxima()));
@@ -155,7 +157,7 @@ public class Fachada implements ar.edu.utn.dds.k3003.facades.FachadaHeladeras{
         this.fachadaViandas = viandas;
     }
 
-    public List<Retiro> retirosDelDia(Integer heladeraId) {
+    public List<RetiroDTO> retirosDelDia(Integer heladeraId) {
         return retirosService.getDailyRetirosByHeladeraId(heladeraId);
     }
 }

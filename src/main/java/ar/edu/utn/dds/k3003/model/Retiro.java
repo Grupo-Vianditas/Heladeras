@@ -19,23 +19,30 @@ public class Retiro {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column
-    private Integer retiroId;
+    private Integer retiroRegistradoId;
+
+    @Column
+    private Long id;
+
+    @Column
+    private String qrVianda;
+
+    @Column
+    private String tarjeta;
+
+    @Column(name = "fechaRetiro", columnDefinition = "TIMESTAMP")
+    private LocalDateTime fechaRetiro;
 
     @Column
     private Integer heladeraId;
 
-    @Column
-    private String qr;
-
-    @Column(name = "fecha", columnDefinition = "TIMESTAMP")
-    private LocalDateTime fecha;
-
     public Retiro() {}
 
-    public Retiro(Integer heladeraId, String qr, LocalDateTime fecha){
+    public Retiro(Long id, String qrVianda, String tarjeta, LocalDateTime fechaRetiro, Integer heladeraId) {
+        this.id = id;
+        this.qrVianda = qrVianda;
+        this.tarjeta = tarjeta;
+        this.fechaRetiro = fechaRetiro;
         this.heladeraId = heladeraId;
-        this.qr = qr;
-        this.fecha = fecha;
     }
-
 }

@@ -43,7 +43,7 @@ public class RetirosRepositoryImpl {
                     "SELECT r " +
                             "FROM Retiro r " +
                             "WHERE r.heladeraId = :heladeraId " +
-                            "AND r.fecha BETWEEN :startOfDay AND :endOfDay",
+                            "AND r.fechaRetiro BETWEEN :startOfDay AND :endOfDay",
                     Retiro.class
             );
             query.setParameter("heladeraId", heladeraId);
